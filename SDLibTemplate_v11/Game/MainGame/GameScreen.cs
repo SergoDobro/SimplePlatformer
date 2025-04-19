@@ -41,8 +41,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             physics.SetCollision(CollisionGroup.Group1, CollisionGroup.Group2, true);
 
             levelData = new LevelDaata_Level1();
-            levelData.LoadPremade();
-            levelData.ApplyPhysics(physics);
+            levelData.LoadPremade(); 
 
             scenes.Add(new GameScreen_GUI());
             base.Init();

@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace GameLogic;
 
-public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent
+public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent, IRegistable
 { 
 
     [JsonIgnore]
@@ -71,5 +71,19 @@ public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent
                 0f
             );
         }
+    }
+
+    [JsonIgnore]
+    public PhysicsManager PhysicsManager { get; set; }
+    public void Register()
+    {
+        if (PhysicsManager is null)
+            PhysicsManager = PhysicsManager.MainInstance;
+        PhysicsManager.AddRigidbody(this);
+    }
+
+    public void GameObjecctDestroyed()
+    {
+        PhysicsManager.RemoveRigidbody(this);
     }
 }

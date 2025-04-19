@@ -13,7 +13,8 @@ namespace SDLibTemplate_v11.Game.MainGame
     }
     public interface IRegistable
     {
-        public void Register(GameComponent gameComponent);
+        public void Register();
+        public void GameObjecctDestroyed();
     }
     public class GameObject
     {
@@ -23,7 +24,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
         public Rigidbody RigidBody { get; set; }
         public List<GameComponent> gameComponents { get; set; } = new List<GameComponent>();
-        public void AddComponent(GameComponent gameComponent)
+        public void AddComponent(GameComponent gameComponent, object param = null)
         {
             gameComponents.Add(gameComponent);
             if (gameComponent is Rigidbody)
@@ -32,9 +33,19 @@ namespace SDLibTemplate_v11.Game.MainGame
             }
             if (gameComponent is IRegistable)
             {
-                (gameComponent as IRegistable).Register(gameComponent);
+                (gameComponent as IRegistable).Register();
             }
             gameComponent.gameObject = this;
+        }
+        public void Destroy()
+        {
+            foreach (var item in gameComponents)
+            {
+                if (item is IRegistable)
+                {
+                    (item as IRegistable).GameObjecctDestroyed();
+                }
+            }
         }
         // TODO: Add a 'Category' and 'Id' property here if we need to map objects to dictionaries
         // [JsonIgnore] // Uncomment if adding these later
@@ -132,9 +143,14 @@ namespace SDLibTemplate_v11.Game.MainGame
         }
 
         public static List<TileGraphicsComponent> tileGraphicsComponents = new List<TileGraphicsComponent>();
-        public void Register(GameComponent gameComponent)
+        public void Register()
         {
-            tileGraphicsComponents.Add(gameComponent as TileGraphicsComponent);
+            tileGraphicsComponents.Add(this);
+        }
+
+        public void GameObjecctDestroyed()
+        {
+            tileGraphicsComponents.Remove(this);
         }
     }
     public class TilingTexture

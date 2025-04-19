@@ -129,13 +129,6 @@ namespace SDLibTemplate_v11.Game.MainGame
         {
 
         }
-        public void ApplyPhysics(PhysicsManager physicsManager)
-        {
-            foreach (var item in GetGameObjects())
-            {
-                physicsManager.AddRigidbody(item.RigidBody);
-            }
-        }
     }
     public class LevelDaata_Level1 : LevelData
     {

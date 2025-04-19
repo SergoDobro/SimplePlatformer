@@ -24,9 +24,11 @@ public struct Collider
 
 public class PhysicsManager 
 {
+    public static PhysicsManager MainInstance { get; set; }
     public List<Rigidbody> _rigidbodies = new List<Rigidbody>();
     private Dictionary<(CollisionGroup, CollisionGroup), bool> _collisionMatrix = new Dictionary<(CollisionGroup, CollisionGroup), bool>();
 
+    public PhysicsManager(bool isMain = true) { if (isMain) MainInstance = this; }
     public void AddRigidbody(Rigidbody rb) => _rigidbodies.Add(rb);
     public void RemoveRigidbody(Rigidbody rb) => _rigidbodies.Remove(rb);
 
