@@ -28,7 +28,10 @@ public class PhysicsManager
     public List<Rigidbody> _rigidbodies = new List<Rigidbody>();
     private Dictionary<(CollisionGroup, CollisionGroup), bool> _collisionMatrix = new Dictionary<(CollisionGroup, CollisionGroup), bool>();
 
-    public PhysicsManager(bool isMain = true) { if (isMain) MainInstance = this; }
+    public PhysicsManager(bool isMain = true) { 
+        if (isMain) 
+            MainInstance = this; 
+    }
     public void AddRigidbody(Rigidbody rb) => _rigidbodies.Add(rb);
     public void RemoveRigidbody(Rigidbody rb) => _rigidbodies.Remove(rb);
 
@@ -60,12 +63,14 @@ public class PhysicsManager
 
     private void CheckCollisions()
     {
+        Rigidbody a = null;
+        Rigidbody b = null;
         for (int i = 0; i < _rigidbodies.Count; i++)
         {
             for (int j = i + 1; j < _rigidbodies.Count; j++)
             {
-                var a = _rigidbodies[i];
-                var b = _rigidbodies[j];
+                a = _rigidbodies[i];
+                b = _rigidbodies[j];
 
                 if (!ShouldCollide(a.Group, b.Group)) continue;
 
@@ -87,7 +92,9 @@ public class PhysicsManager
 
     private bool ShouldCollide(CollisionGroup groupA, CollisionGroup groupB)
     {
+        return _collisionMatrix.ContainsKey((groupA, groupB));
         return _collisionMatrix.TryGetValue((groupA, groupB), out var canCollide) && canCollide;
+
     }
 
     private bool CheckColliderCollision(Rigidbody a, Collider colliderA, Rigidbody b, Collider colliderB,

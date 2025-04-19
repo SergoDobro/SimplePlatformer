@@ -127,7 +127,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 rb.Draw(_spriteBatch, textures,
                       cameraOffset: camera.Position,
                       scaleFactor: camera.Zoom,
-                      color: Color.White,
+                      color: new Color(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle()),
                       sheetName: "simple_sheet");
             }
             
