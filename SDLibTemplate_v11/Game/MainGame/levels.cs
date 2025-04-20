@@ -12,32 +12,6 @@ using System.Runtime.InteropServices;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
-    public class Player : GameObject
-    {
-        static float JumpPower = 10;
-        public void ButtonUpPressed()
-        {
-
-            if (kayoteTime>0)
-            {
-                RigidBody.Velocity += new Vector2(0, -JumpPower);
-            }
-        }
-        bool prevSt = false;
-        float kayoteTime = 0;
-        public void Update(float dt)
-        {
-            if (RigidBody.IsCollidingDown)
-            {
-                kayoteTime = 0.15f;
-            }
-            else
-            {
-                kayoteTime -= dt * 1;
-            }
-            prevSt = RigidBody.IsCollidingDown;
-        }
-    }
 
     public class LevelData
     {
@@ -152,7 +126,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             {
                 Group = CollisionGroup.Group1,
                 Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
-                Acceleration = new Vector2(0, 50)
+                Acceleration = new Vector2(0, 50+100)
             });
 
             GameObjects.TryAdd("player", new Dictionary<string, GameObject>() {

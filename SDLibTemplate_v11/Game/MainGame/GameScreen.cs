@@ -78,7 +78,10 @@ namespace SDLibTemplate_v11.Game.MainGame
             physics.Update(dt/3);
             physics.Update(dt/3);
             levelData.Player.Update(dt);
-
+            foreach (var item in levelData.GameObjects["AIs"])
+            {
+                (item.Value as Player).Update(dt);
+            }
         }
 
         public void SetBindings()

@@ -23,7 +23,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
         public Rigidbody RigidBody { get; set; }
         public List<GameComponent> gameComponents { get; set; } = new List<GameComponent>();
-        public void AddComponent(GameComponent gameComponent)
+        public GameObject AddComponent(GameComponent gameComponent)
         {
             gameComponents.Add(gameComponent);
             if (gameComponent is Rigidbody)
@@ -35,6 +35,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 (gameComponent as IRegistable).Register(gameComponent);
             }
             gameComponent.gameObject = this;
+            return this;
         }
         // TODO: Add a 'Category' and 'Id' property here if we need to map objects to dictionaries
         // [JsonIgnore] // Uncomment if adding these later
@@ -207,5 +208,5 @@ namespace SDLibTemplate_v11.Game.MainGame
              */
         }
 
-    }
+    } 
 }
