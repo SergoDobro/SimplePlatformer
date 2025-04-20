@@ -45,6 +45,32 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             scenes.Add(new GameScreen_GUI());
             base.Init();
+
+
+            levelData.GameObjects.Add("AIs", new Dictionary<string, GameObject>());
+            levelData.GameObjects["AIs"].Add("test_A",
+            new Player()
+            {
+                Position = new Vector2(110, 50),
+
+            }.AddComponent(new Rigidbody
+            {
+                Group = CollisionGroup.Group1,
+                Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
+                Acceleration = new Vector2(0, 50 + 100)
+            }));
+
+            levelData.GameObjects["AIs"].Add("test_B",
+            new Player()
+            {
+                Position = new Vector2(140, 50),
+
+            }.AddComponent(new Rigidbody
+            {
+                Group = CollisionGroup.Group1,
+                Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
+                Acceleration = new Vector2(0, 50 + 100)
+            }));
         }
 
         
@@ -77,7 +103,10 @@ namespace SDLibTemplate_v11.Game.MainGame
             physics.Update(dt/3);
             physics.Update(dt/3);
             levelData.Player.Update(dt);
-
+            foreach (var item in levelData.GameObjects["AIs"])
+            {
+                (item.Value as Player).Update(dt);
+            }
         }
 
         public void SetBindings()

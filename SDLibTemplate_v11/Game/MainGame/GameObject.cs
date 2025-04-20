@@ -24,7 +24,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
         public Rigidbody RigidBody { get; set; }
         public List<GameComponent> gameComponents { get; set; } = new List<GameComponent>();
-        public void AddComponent(GameComponent gameComponent, object param = null)
+        public GameObject AddComponent(GameComponent gameComponent)
         {
             gameComponents.Add(gameComponent);
             if (gameComponent is Rigidbody)
@@ -36,6 +36,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 (gameComponent as IRegistable).Register();
             }
             gameComponent.gameObject = this;
+            return this;
         }
         public void Destroy()
         {
@@ -223,5 +224,5 @@ namespace SDLibTemplate_v11.Game.MainGame
              */
         }
 
-    }
+    } 
 }
