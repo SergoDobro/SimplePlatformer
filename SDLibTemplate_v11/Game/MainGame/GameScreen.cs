@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using ClassikNet;
 using GameLogic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SDLib_Experiments.Game.MainGame;
 using SDLibTemplate_v11.Game.Menu;
 using SDMonoLibUtilits;
 using SDMonoLibUtilits.Scenes;
@@ -27,7 +30,13 @@ namespace SDLibTemplate_v11.Game.MainGame
         Dictionary<string, Texture2D> textures;
         PhysicsManager physics;
         Camera camera;
-        LevelData levelData;
+        public LevelData levelData;
+
+
+        public ClassicNet classicNet;
+        Selector selector;
+        float[][] lastNetSnapshot;
+
         public override void Init()
         {
             RootScene.Instance.IsMouseVisible = false;
@@ -48,31 +57,105 @@ namespace SDLibTemplate_v11.Game.MainGame
 
 
             levelData.GameObjects.Add("AIs", new Dictionary<string, GameObject>());
-            levelData.GameObjects["AIs"].Add("test_A",
-            new Player()
-            {
-                Position = new Vector2(110, 50),
+            //levelData.GameObjects["AIs"].Add("test_A",
+            //new Player()
+            //{
+            //    Position = new Vector2(110, 50),
 
-            }.AddComponent(new Rigidbody
-            {
-                Group = CollisionGroup.Group1,
-                Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
-                Acceleration = new Vector2(0, 50 + 100)
-            }));
+            //}.AddComponent(new Rigidbody
+            //{
+            //    Group = CollisionGroup.Group1,
+            //    Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
+            //    Acceleration = new Vector2(0, 50 + 100)
+            //}).AddComponent(new AIComponent()
+            //{
 
-            levelData.GameObjects["AIs"].Add("test_B",
-            new Player()
-            {
-                Position = new Vector2(140, 50),
+            //}));
 
-            }.AddComponent(new Rigidbody
+            for (int i = 0; i < 4; i++)
             {
-                Group = CollisionGroup.Group1,
-                Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
-                Acceleration = new Vector2(0, 50 + 100)
-            }));
+
+                
+            }
+
+
+
+
+            selector = new Selector_platformer();
+            selector.Init(levelData);
+            //gamecore = selector.chamberList.OrderBy(x => x.score).First().gamecore;//new Game(); 
+            classicNet = selector.chamberList.OrderBy(x => x.score).First().classicNet;
+
+            //classicNet.Init(3, new int[] { 6, 3, 3 });
+            new Thread(() =>
+            {
+                float extraTime = 0;
+                for (int i = 0; i < 1000; i++)
+                {
+                    safer = true;
+                    Thread.Sleep(500 + (int)(Math.Log((i+2)/2f, 1.5)*2000 + extraTime*1000));
+                    safer = false;
+                    Thread.Sleep(100);
+                    selector.Select();
+                    selectionStartedTime = totalTime;
+                    extraTime = -selector.BestChamber().player.Position.Y / 100;
+                    Thread.Sleep(100);
+                }
+                return;
+                Thread.Sleep(1000);
+                for (int i = 0; i < 1; i++)
+                {
+                    Chamber _chamber = selector.BestChamber();
+                    int k = 15;
+                    int gameLength = 4000;
+                    for (int j = 1; j <= gameLength * k; j++)
+                    {
+                        selector.Tick();
+                        if (j % (50) == 0)
+                        {
+                            //(scenes[0] as GameScreen_GUI).label_iteration.text = $"Iteration: {Math.Ceiling(100 * j / ((float)gameLength * k))}%";
+                            //(scenes[0] as GameScreen_GUI).label_score.text = $"Score: {_chamber.score}";
+                        }
+                        if (j % (gameLength) == 0)
+                        {
+                            //selector.Select();
+                            //(scenes[0] as GameScreen_GUI).label_average_gen_score.text = $"Average Generation Score: {selector.AverageInGenerationScore}";
+                            //(scenes[0] as GameScreen_GUI).label_top_gen_score.text = $"Top Generation Score: {selector.BestInGenerationScore}";
+
+
+                            _chamber = selector.BestChamber();
+                            //gamecore = _chamber.gamecore;//new Game(); 
+                            classicNet = _chamber.classicNet;
+                        }
+                    }
+
+                    _chamber = selector.BestChamber();
+                    //gamecore = _chamber.gamecore;//new Game(); 
+                    classicNet = _chamber.classicNet;
+                    SetBindings();
+
+                    Thread.Sleep(200);
+
+                    for (int j = 0; j < 3000; j++)
+                    {
+                        Thread.Sleep(4);
+                        _chamber.Tick();
+                        lastNetSnapshot = _chamber.Tick_SnapshotNet();
+                        //(scenes[0] as GameScreen_GUI).label_score.text = $"Score: {_chamber.score}";
+                    }
+                    _chamber.score = 0;
+                    Thread.Sleep(500);
+                }
+            }).Start();
+
+
+
+
         }
-
+        /// <summary>
+        /// can freely use ais
+        /// </summary>
+        bool safer = false;
         
 
 
@@ -91,22 +174,36 @@ namespace SDLibTemplate_v11.Game.MainGame
             textures.Add("simple_sheet", contentManager.Load<Texture2D>("Textures\\simple_sheet"));
             RootScene.Instance.mainBackround = Color.DarkBlue;
         }
+        float selectionStartedTime = 0;
+        float totalTime = 0;
+        public int frame = 0;
         public override void Update(float dt)
         {
             base.Update(dt);
             if (!updateGame)
                 return;
 
+            totalTime += dt;
+            frame++;
+            //if (frame % 8 != 0)
+            //    return;
+
+
+            Selector_platformer.TimeSinceLastSelection = totalTime - selectionStartedTime;
 
             camera.Follow(levelData.Player.RigidBody.Position);
-            physics.Update(dt/3);
-            physics.Update(dt/3);
-            physics.Update(dt/3);
+            physics.Update(dt/2);
+            //physics.Update(dt/3);
+            //physics.Update(dt/3);
             levelData.Player.Update(dt);
             foreach (var item in levelData.GameObjects["AIs"])
             {
                 (item.Value as Player).Update(dt);
             }
+            //AIComponent.SimulateAIs();
+            if (safer)
+                selector.Tick();
+
         }
 
         public void SetBindings()
@@ -116,18 +213,19 @@ namespace SDLibTemplate_v11.Game.MainGame
             RootScene.controls.AddBinding(new SDMonoLibUtilits.KeyBindingsData(), "game_controls");
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.A, () => {
-                levelData.Player.RigidBody.Velocity += new Vector2(-2, 0);
+                levelData.Player.ButtonLeftPressed();
 
             });
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.D, () => {
-                levelData.Player.RigidBody.Velocity += new Vector2(2, 0);
+                levelData.Player.ButtonRightPressed();
             });
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.W, () => {
                 levelData.Player.ButtonUpPressed();
-                
+
             });
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Q, () => {
+                
                 camera.Zoom *= 1.01f;
             });
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.E, () => {
@@ -190,7 +288,7 @@ namespace SDLibTemplate_v11.Game.MainGame
         public void Follow(Vector2 position)
         {
             float p = 0.9f;
-            Position = (position + new Vector2(-10,-10)*Zoom)* p + (1- p) * Position;
+            Position = (position - RootScene.GetGraphicsSize_v / (Zoom*(4))) * p + (1- p) * Position;
         }
     }
 }

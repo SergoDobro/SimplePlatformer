@@ -72,6 +72,10 @@ public class PhysicsManager
                 a = _rigidbodies[i];
                 b = _rigidbodies[j];
 
+
+                //if ((a.Position - b.Position).LengthSquared() > 1000 * 100) break; //TODO maybe remove
+                
+
                 if (!ShouldCollide(a.Group, b.Group)) continue;
 
                 foreach (var colliderA in a.Colliders)
@@ -100,6 +104,13 @@ public class PhysicsManager
     private bool CheckColliderCollision(Rigidbody a, Collider colliderA, Rigidbody b, Collider colliderB,
                                       out Vector2 normal, out float depth)
     {
+        if ((colliderA.Offset - colliderB.Offset).LengthSquared()>50*50)
+        {
+            normal = new Vector2();
+            depth = 0;
+            return false;
+        }
+
         normal = Vector2.Zero;
         depth = 0f;
 

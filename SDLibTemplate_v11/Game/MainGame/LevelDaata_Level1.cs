@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -30,7 +31,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             GameObjects.TryAdd("platforms", new Dictionary<string, GameObject>());
             float lastX = -100;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 20; i++)
             {
 
                 var platform = new GameObject()
@@ -55,8 +56,8 @@ namespace SDLibTemplate_v11.Game.MainGame
             for (int j = 0; j < 50; j++)
             {
 
-                addPlatform(lastX + 100, 80 + lastY);
-                lastX += /*GameObjects["tiles"].Last().Value.RigidBody.Colliders[0].Size.X*/ Random.Shared.Next(-20,21);
+                addPlatform(lastX + 50, 80 + lastY);
+                lastX += /*GameObjects["tiles"].Last().Value.RigidBody.Colliders[0].Size.X*/ Random.Shared.Next(-50,51);
                 lastY -= 16;
             }
 
@@ -113,7 +114,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
                 var platform = new GameObject()
                 {
-                        Position = new Vector2(100 + Random.Shared.Next(-10,10), 100 - i*20),
+                        Position = new Vector2(350 + Random.Shared.Next(-10,10), 100 - i*20),
                     
                 };
                 platform.AddComponent(new Rigidbody
@@ -127,6 +128,37 @@ namespace SDLibTemplate_v11.Game.MainGame
                 lastX += platform.RigidBody.Colliders[0].Size.X + 10;
                 GameObjects["platforms"].TryAdd($"platform_{i}_up", platform);
             }
+        }
+        public Vector2 GetClosestPlatformBelowMyY(Vector2 position)
+        {
+            var plat = GameObjects["platforms"].First().Value;
+            for (int i = 0; i < GameObjects["platforms"].Count; i++)
+            {
+
+                if (-GameObjects["platforms"][$"platform_{i}_up"].Position.Y > -position.Y)
+                {
+                    break;
+                }
+                else
+                    plat = GameObjects["platforms"][$"platform_{i}_up"];
+            }
+            return plat.Position;
+        }
+
+        public Vector2 GetClosestPlatformBeyondMyY(Vector2 position)
+        {
+            var plat = GameObjects["platforms"].First().Value;
+            for (int i = 0; i < GameObjects["platforms"].Count - 1; i++)
+            {
+
+                if (-GameObjects["platforms"][$"platform_{i+1}_up"].Position.Y > -position.Y)
+                {
+                    break;
+                }
+                else
+                    plat = GameObjects["platforms"][$"platform_{i}_up"];
+            }
+            return plat.Position;
         }
     }
 }

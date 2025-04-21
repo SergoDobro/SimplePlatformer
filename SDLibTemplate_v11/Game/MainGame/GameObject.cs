@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
+using System.ComponentModel.Design;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -224,5 +225,50 @@ namespace SDLibTemplate_v11.Game.MainGame
              */
         }
 
-    } 
+    }
+    public class AIComponent : GameComponent, IRegistable
+    {
+        public static List<AIComponent> aIComponents = new List<AIComponent>();
+        public AIModel AIModel = new AIModel();
+        public static void SimulateAIs()
+        {
+            foreach (var item in aIComponents)
+            {
+                item.AIModel.Act(item.gameObject as Player);
+            }
+        }
+        public void GameObjecctDestroyed()
+        {
+            aIComponents.Remove(this);
+
+        }
+
+        public void Register()
+        {
+            aIComponents.Add(this);
+        }
+    }
+    public class AIModel
+    {
+        LevelData levelData;
+        public void Act(Player player)
+        {
+            var choice = Random.Shared.NextSingle();
+            if (choice<0.5)
+            {
+                player.ButtonUpPressed();
+
+            }
+            else if (choice<0.75)
+            {
+                player.ButtonRightPressed();
+
+            }
+            else 
+            {
+                player.ButtonLeftPressed();
+
+            }
+        }
+    }
 }
