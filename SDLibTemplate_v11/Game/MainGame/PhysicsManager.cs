@@ -104,7 +104,7 @@ public class PhysicsManager
     private bool CheckColliderCollision(Rigidbody a, Collider colliderA, Rigidbody b, Collider colliderB,
                                       out Vector2 normal, out float depth)
     {
-        if ((colliderA.Offset - colliderB.Offset).LengthSquared()>50*50)
+        if ((a.Position - b.Position).LengthSquared()>50*50)
         {
             normal = new Vector2();
             depth = 0;

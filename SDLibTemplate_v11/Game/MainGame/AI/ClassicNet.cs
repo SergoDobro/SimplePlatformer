@@ -19,7 +19,12 @@ namespace ClassikNet
             { "distToTopY", 3},
             { "distToBotX", 4},
             { "distToBotY", 5},
-
+            { "distToTopTopX", 6},
+            { "distToTopTopY", 7},
+            { "velX", 8},
+            { "velY", 9},
+            { "memCell", 10},
+            
         };
 
         static public Dictionary<int, string> layerOutputPosition_descriptor = new Dictionary<int, string>()
@@ -27,6 +32,8 @@ namespace ClassikNet
             {  0, "out_left" },
             {  1, "out_up" },
             {  2, "out_right" },
+            {  3, "memCell" },
+            
 
         };
         public void Init(int[] layerSizes)
@@ -188,7 +195,7 @@ namespace ClassikNet
                     layerNeurons_biases[layerOfMutation][j] += mutagenPower * (float)(Random.Shared.NextDouble() - 0.5);
             }
 
-            layerOfMutation = Random.Shared.Next(0, layerInfo.Length);
+            layerOfMutation = Random.Shared.Next(0, layerInfo.Length-1);
 
             for (int j = 0; j < layerInfo[layerOfMutation]; j++)
             {

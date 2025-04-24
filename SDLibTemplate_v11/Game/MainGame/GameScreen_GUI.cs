@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using SDLibTemplate_v11.Game.Menu;
 using SDMonoLibUtilits;
 using SDMonoLibUtilits.Scenes.GUI;
+using SDMonoLibUtilits.Utils;
 using SDMonoUI.UI.Base;
 using SDMonoUI.UI.Base.RectangleBuilder;
 using SDMonoUI.UI.Elements;
@@ -71,6 +72,15 @@ namespace SDLibTemplate_v11.Game.MainGame
 
 
 
+
+            //Elements.Add(new Slider(Manager)
+            //{
+            //    rectangle = RB.GetRect(0 - 100, 700, 0, 50, 3, 3, 3, 3),
+            //    text = "Pause",
+            //    textAligment = SDMonoUI.UI.Enums.TextAligment.Center,
+            //    scale = 0.3f,
+            //    mainColor = Color.MonoGameOrange
+            //});
         }
 
 

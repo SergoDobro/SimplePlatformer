@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using SDLibTemplate_v11.Game.MainGame;
 using SDMonoLibUtilits;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -27,7 +28,7 @@ namespace SDLib_Experiments.Game.MainGame
             {
                 chamberList.Add(new Chamber());
                 chamberList.Last().classicNet = new ClassicNet();
-                chamberList.Last().classicNet.Init(new int[] { 6, 90, 10, 3 });
+                chamberList.Last().classicNet.Init(new int[] { 11, 120,30, 4 });
                 CreateChamberSpecificData(data, i, chamberList.Last());
             }
             foreach (var item in chamberList)
@@ -73,11 +74,11 @@ namespace SDLib_Experiments.Game.MainGame
         {
             var resList = chamberList.OrderByDescending(x => x.Evaluate()).ToList();
             BestInGenerationScore = resList[0].score;
-            AverageInGenerationScore = resList.Sum(x=>x.score)/(float)resList.Count;
+            AverageInGenerationScore = resList.Sum(x => x.score) / (float)resList.Count;
             List<Player> freePlayers = new List<Player>(); //to rebind player on the map
-            for (int i = (int)(resList.Count*0.1f); i < resList.Count; i++)
+            for (int i = (int)(resList.Count * 0.1f); i < resList.Count; i++)
             {
-                if (2f*i / (float)resList.Count > Random.Shared.NextDouble())
+                if (5f * i / (float)resList.Count > Random.Shared.NextDouble())
                 {
                     freePlayers.Add(resList[i].player);
                     resList.RemoveAt(i);
@@ -85,7 +86,7 @@ namespace SDLib_Experiments.Game.MainGame
                 }
             }
             int newBorns = chamberList.Count - resList.Count;
-            if (newBorns>0)
+            if (newBorns > 0)
             {
                 //resList.Add(resList[0].CloneChamber());
                 //for (int i = 0; i < newBorns/2 && newBorns>0; i+=2)
@@ -94,60 +95,6 @@ namespace SDLib_Experiments.Game.MainGame
                 //    newBorns--;
                 //}
             }
-            for (int i = 0; i < newBorns; i++)
-            {
-                if (i>= resList.Count)
-                {
-                    newBorns -= resList.Count;
-                    i = 0;
-                }
-                resList.Add(resList[i].CloneChamber());
-                resList.Last().player = freePlayers[i];
-
-                    //freePlayers.Add(resList[i].player);
-            }
-            chamberList.Clear();
-            chamberList = resList; 
-            foreach (var item in chamberList)
-            {
-                item.Init(); 
-            }
-
-        }
-        public float BestInGenerationScore;
-        public float AverageInGenerationScore;
-        public Chamber BestChamber()
-        {
-            return chamberList.OrderByDescending(x => x.Evaluate()).First();
-        }
-
-    }
-    public class Selector_platformer : Selector
-    {
-        public static float TimeSinceLastSelection { get; set; }
-        public override void Select()
-        {
-            foreach (var item in chamberList)
-            {
-                item.player.Position = new Vector2(270, 50);
-            }
-            var resList = chamberList.OrderByDescending(x => x.Evaluate()).ToList();
-            BestInGenerationScore = resList[0].score;
-            AverageInGenerationScore = resList.Sum(x => x.score) / (float)resList.Count;
-            List<Player> freePlayers = new List<Player>();
-            int c_orig = (int)(resList.Count);
-            int c = (int)(resList.Count * 0.1f);
-            int c_k = (int)(resList.Count * 0.9f);
-            for (int i = c; i < resList.Count; i++)
-            {
-                if (10f * (i - c) / (float)c_k > Random.Shared.NextDouble())
-                {
-                    freePlayers.Add(resList[i].player);
-                    resList.RemoveAt(i);
-                    i--;
-                }
-            }
-            int newBorns = chamberList.Count - resList.Count; 
             for (int i = 0; i < newBorns; i++)
             {
                 if (i >= resList.Count)
@@ -168,13 +115,90 @@ namespace SDLib_Experiments.Game.MainGame
             }
 
         }
+        public float BestInGenerationScore;
+        public float AverageInGenerationScore;
+        public Chamber BestChamber()
+        {
+            return chamberList.OrderByDescending(x => x.Evaluate()).First();
+        }
+
+    }
+    public class Selector_platformer : Selector
+    {
+        public static float TimeSinceLastSelection { get; set; }
+        Vector2 oldVel;
+        Vector2 oldPos;
+        public void Reload()
+        {
+
+            Vector2 newStart = new Vector2(60 + Random.Shared.Next(-10, 10), 50);
+            Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0))*5;
+            if (Random.Shared.NextDouble() < 0.3)
+            {
+
+                newVelocity = oldVel;
+                newStart = oldPos;
+            }
+
+            foreach (var item in chamberList)
+            {
+                item.player.Position = newStart;
+                item.player.RigidBody.Velocity = newVelocity;
+                item.player.RigidBody.IsCollidingDown = false;
+                item.memCell = 0;
+            }
+            oldVel = newVelocity;
+            oldPos = newStart;
+        }
+        public override void Select()
+        {
+            Reload();
+            var resList = chamberList.OrderByDescending(x => x.Evaluate()).ToList();
+            BestInGenerationScore = resList[0].score;
+            AverageInGenerationScore = resList.Sum(x => x.score) / (float)resList.Count;
+            Queue<Player> freePlayers = new Queue<Player>();
+            int c_orig = (int)(resList.Count);
+            float portion = 0.25f;
+            int c = (int)(resList.Count * portion);
+            int c_k = (int)(resList.Count * (1 - portion));
+            for (int i = c; i < resList.Count; i++)
+            {
+                if (2f * (i - c) / (float)c_k > Random.Shared.NextDouble())
+                {
+                    freePlayers.Enqueue(resList[i].player);
+                    resList.RemoveAt(i);
+                    i--;
+                }
+            }
+            int newBorns = chamberList.Count - resList.Count;
+            int og = resList.Count;
+            for (int i = 0; i < newBorns; i++)
+            {
+                if (i >= og)
+                {
+                    newBorns -= og;
+                    i = 0;
+                }
+                resList.Add(resList[i].CloneChamber());
+                resList.Last().player = freePlayers.Dequeue();
+
+                //freePlayers.Add(resList[i].player);
+            }
+            chamberList.Clear();
+            chamberList = resList;
+            foreach (var item in chamberList)
+            {
+                item.Init();
+            }
+
+        }
     }
     public class Chamber
     {
         public float score;
         public Player player { get; set; }
         public ClassicNet classicNet;
-        int successInRowCounter = 0; 
+        int successInRowCounter = 0;
         int totalFails = 0;
         float maxH = int.MinValue;
         public void Init()
@@ -234,11 +258,11 @@ namespace SDLib_Experiments.Game.MainGame
             var result = classicNet.RunNet(GetGameData());
 
             float out_left = result[0];
-            float out_up= result[1];
+            float out_up = result[1];
             float out_right = result[2];
 
-            if (out_left > out_right && out_left>0.3) player.ButtonLeftPressed();
-            if (out_right > out_left && out_right > 0.3) player.ButtonRightPressed();
+            if (out_left > out_right && out_left > 0.1) player.ButtonLeftPressed();
+            if (out_right > out_left && out_right > 0.1) player.ButtonRightPressed();
             if (out_up > 0.1) player.ButtonUpPressed();
 
             score = -player.Position.Y;
@@ -247,15 +271,20 @@ namespace SDLib_Experiments.Game.MainGame
                 maxH = -player.Position.Y;
             }
 
-
+            memCell = result[3];
         }
         public float prevX = 0;
         public float prevY = 0;
         public float iter = 0;
+        public float memCell = 0;
         public Dictionary<string, float> GetGameData()
         {
             //
             data.Clear();
+
+            data["velX"] = player.RigidBody.Velocity.X;
+            data["velY"] = player.RigidBody.Velocity.Y;
+
             data["positionX"] = player.Position.X - prevX;
             data["positionY"] = player.Position.Y - prevY;
             Vector2 topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBelowMyY(player.Position);
@@ -265,11 +294,18 @@ namespace SDLib_Experiments.Game.MainGame
             topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyY(player.Position);
             data["distToBotX"] = (player.Position.X - topPanel.X) / 10f;
             data["distToBotY"] = (player.Position.Y - topPanel.Y) / 10f;
+
+
+            topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyYX2(player.Position);
+            data["distToTopTopX"] = (player.Position.X - topPanel.X) / 10f;
+            data["distToTopTopY"] = (player.Position.Y - topPanel.Y) / 10f;
+
+            data["memCell"] = memCell;
             //data["time"] = iter; 
             prevX = player.Position.X;
             prevY = player.Position.Y;
             //iter = Selector_platformer.TimeSinceLastSelection;
-            
+
             return data;
         }
         public float[][] Tick_SnapshotNet()
@@ -279,24 +315,25 @@ namespace SDLib_Experiments.Game.MainGame
         }
         public float Evaluate()
         {
-            return score + maxH/2f - (
-                ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBelowMyY(player.Position)- player.Position).Length() + 
-                
-                (((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyY(player.Position) - player.Position).Length()
+            return score/4  + maxH -  ((
+                ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBelowMyY(player.Position) - player.Position).LengthSquared()
+
+                //(((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyY(player.Position) - player.Position).Length()
+                ) / 20
                 ;
         }
         public Chamber CloneChamber()
         {
             Chamber chamber = new Chamber();
             chamber.classicNet = classicNet.Clone();
-            chamber.classicNet.MutateGenome_OneGenome(55, 0.75f);
+            chamber.classicNet.Mutate(16, 0.0005f);
             chamber.Init();
             return chamber;
         }
         public static Chamber CrossingOverChamber(ClassicNet classicNet)
         {
             Chamber chamber = new Chamber();
-            chamber.classicNet = classicNet; 
+            chamber.classicNet = classicNet;
             chamber.Init();
             return chamber;
         }

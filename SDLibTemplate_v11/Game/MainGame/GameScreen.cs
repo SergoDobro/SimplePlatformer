@@ -44,13 +44,13 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             SetBindings();
 
-            camera = new Camera() { Zoom = 5};
+            camera = new Camera() { Zoom = 5 };
             // Setup
             physics = new PhysicsManager();
             physics.SetCollision(CollisionGroup.Group1, CollisionGroup.Group2, true);
 
             levelData = new LevelDaata_Level1();
-            levelData.LoadPremade(); 
+            levelData.LoadPremade();
 
             scenes.Add(new GameScreen_GUI());
             base.Init();
@@ -75,7 +75,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             for (int i = 0; i < 4; i++)
             {
 
-                
+
             }
 
 
@@ -90,15 +90,35 @@ namespace SDLibTemplate_v11.Game.MainGame
             new Thread(() =>
             {
                 float extraTime = 0;
+                float maxExtra = 0;
                 for (int i = 0; i < 1000; i++)
                 {
                     safer = true;
-                    Thread.Sleep(500 + (int)(Math.Log((i+2)/2f, 1.5)*2000 + extraTime*1000));
+                    Thread.Sleep((500 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500))/10);
                     safer = false;
                     Thread.Sleep(100);
+                    extraTime = (selector.chamberList.OrderBy(x => -x.player.Position.Y).First().player.Position.Y) / 100;
+                    if (extraTime < 0)
+                        extraTime = 0;
+                    if (extraTime > maxExtra)
+                        maxExtra = extraTime;
                     selector.Select();
                     selectionStartedTime = totalTime;
-                    extraTime = -selector.BestChamber().player.Position.Y / 100;
+
+                    for (int j = 0; j < -250+10*i + maxExtra*64; j++)
+                    {
+
+                        float dt = 1 / 120f;
+                        physics.Update(dt);
+                        levelData.Player.Update(dt);
+                        //levelData.Player.ButtonUpPressed();
+                        foreach (var item in levelData.GameObjects["AIs"])
+                        {
+                            (item.Value as Player).Update(dt);
+                        }
+                        selector.Tick();
+                    }
+
                     Thread.Sleep(100);
                 }
                 return;
@@ -156,7 +176,7 @@ namespace SDLibTemplate_v11.Game.MainGame
         /// can freely use ais
         /// </summary>
         bool safer = false;
-        
+
 
 
         public override void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
@@ -192,17 +212,21 @@ namespace SDLibTemplate_v11.Game.MainGame
             Selector_platformer.TimeSinceLastSelection = totalTime - selectionStartedTime;
 
             camera.Follow(levelData.Player.RigidBody.Position);
-            physics.Update(dt/2);
+            //physics.Update(dt / 2);
             //physics.Update(dt/3);
             //physics.Update(dt/3);
-            levelData.Player.Update(dt);
-            foreach (var item in levelData.GameObjects["AIs"])
-            {
-                (item.Value as Player).Update(dt);
-            }
             //AIComponent.SimulateAIs();
             if (safer)
+            {
+                physics.Update(dt / 2);
+                levelData.Player.Update(dt/2);
+                foreach (var item in levelData.GameObjects["AIs"])
+                {
+                    (item.Value as Player).Update(dt/2);
+                }
                 selector.Tick();
+
+            }
 
         }
 
@@ -212,23 +236,28 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             RootScene.controls.AddBinding(new SDMonoLibUtilits.KeyBindingsData(), "game_controls");
 
-            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.A, () => {
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.A, () =>
+            {
                 levelData.Player.ButtonLeftPressed();
 
             });
-            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.D, () => {
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.D, () =>
+            {
                 levelData.Player.ButtonRightPressed();
             });
-            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.W, () => {
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.W, () =>
+            {
                 levelData.Player.ButtonUpPressed();
 
             });
 
-            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Q, () => {
-                
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Q, () =>
+            {
+
                 camera.Zoom *= 1.01f;
             });
-            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.E, () => {
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.E, () =>
+            {
                 camera.Zoom *= 0.99f;
             });
 
@@ -238,7 +267,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
 
         public override void Draw(SpriteBatch _spriteBatch)
-        {  
+        {
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
             foreach (var rb in physics._rigidbodies)
@@ -254,12 +283,15 @@ namespace SDLibTemplate_v11.Game.MainGame
                 rb.Draw(_spriteBatch, textures,
                       cameraOffset: camera.Position,
                       scaleFactor: camera.Zoom,
-                      color: new Color(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle()),
+                      color: new Color(
+                          (float)Math.Sin(DateTime.Now.Second * 0.1),
+                      (float)Math.Sin(DateTime.Now.Second*0.14 + 1),
+                      (float)Math.Sin(DateTime.Now.Second* 0.11 + 3))*0.5f,
                       sheetName: "simple_sheet");
             }
-            
+
             _spriteBatch.End();
-            base.Draw(_spriteBatch); 
+            base.Draw(_spriteBatch);
         }
 
         #region pause
@@ -288,7 +320,7 @@ namespace SDLibTemplate_v11.Game.MainGame
         public void Follow(Vector2 position)
         {
             float p = 0.9f;
-            Position = (position - RootScene.GetGraphicsSize_v / (Zoom*(4))) * p + (1- p) * Position;
+            Position = (position - RootScene.GetGraphicsSize_v / (Zoom * (4))) * p + (1 - p) * Position;
         }
     }
 }
