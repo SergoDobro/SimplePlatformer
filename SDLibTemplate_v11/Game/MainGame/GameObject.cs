@@ -15,7 +15,7 @@ namespace SDLibTemplate_v11.Game.MainGame
     public interface IRegistable
     {
         public void Register();
-        public void GameObjecctDestroyed();
+        public void GameObjectDestroyed();
     }
     public class GameObject
     {
@@ -25,6 +25,17 @@ namespace SDLibTemplate_v11.Game.MainGame
 
         public Rigidbody RigidBody { get; set; }
         public List<GameComponent> gameComponents { get; set; } = new List<GameComponent>();
+        public GameComponent GetComponent<T>()
+        {
+            foreach (var component in gameComponents)
+            {
+                if (component is T)
+                {
+                    return component;
+                }
+            }
+            return null;
+        }
         public GameObject AddComponent(GameComponent gameComponent)
         {
             gameComponents.Add(gameComponent);
@@ -45,7 +56,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             {
                 if (item is IRegistable)
                 {
-                    (item as IRegistable).GameObjecctDestroyed();
+                    (item as IRegistable).GameObjectDestroyed();
                 }
             }
         }
@@ -150,7 +161,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             tileGraphicsComponents.Add(this);
         }
 
-        public void GameObjecctDestroyed()
+        public void GameObjectDestroyed()
         {
             tileGraphicsComponents.Remove(this);
         }
@@ -237,7 +248,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 item.AIModel.Act(item.gameObject as Player);
             }
         }
-        public void GameObjecctDestroyed()
+        public void GameObjectDestroyed()
         {
             aIComponents.Remove(this);
 

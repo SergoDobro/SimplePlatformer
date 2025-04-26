@@ -21,6 +21,7 @@ namespace SDLibTemplate_v11.Game.MainGame
         float kayoteTime = 0;
         public void Update(float dt)
         {
+            
             _dt = dt;
             if (RigidBody.IsCollidingDown)
             {
@@ -31,7 +32,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 kayoteTime -= dt * 1;
             }
             prevSt = RigidBody.IsCollidingDown;
-            
+
             tickWaiters[0] = false;
             tickWaiters[1] = false;
             tickWaiters[2] = false;

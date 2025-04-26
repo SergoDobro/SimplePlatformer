@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Xna.Framework;
@@ -84,7 +85,14 @@ namespace SDLibTemplate_v11.Game.MainGame
         }
 
 
-
+        public void SubscribeOnExit(Action action)
+        {
+            var act = action;
+            (pauseElements[2] as ButtonEffected).LeftButtonPressed +=()=> { act();
+                Thread.Sleep(1000);
+            } ;
+            
+        }
 
         #region Pause
         List<DrawableUIElement> pauseElements = new List<DrawableUIElement>();

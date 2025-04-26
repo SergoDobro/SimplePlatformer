@@ -53,8 +53,8 @@ namespace SDLibTemplate_v11.Game.Menu
         protected override void CreateUI()
         {
             RootScene.Instance.SetWindowSize(1224, 896);
-            RootScene.Instance.SetWindowExpectedSize(700, 600);
-            RootScene.Instance.mainBackround = Color.Tan;
+            RootScene.Instance.SetWindowResolutionSize(700, 600);
+            RootScene.Instance.mainBackground = Color.Tan;
             DUIE_Outline.standartOutline = 2;
             DUIE_Outline.standartOutlineColor = new Color(Color.White, 0.8f);
 

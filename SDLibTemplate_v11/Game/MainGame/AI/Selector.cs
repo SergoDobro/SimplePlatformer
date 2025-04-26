@@ -3,6 +3,7 @@ using GameLogic;
 using Microsoft.Xna.Framework;
 using SDLibTemplate_v11.Game.MainGame;
 using SDMonoLibUtilits;
+using Simple_Platformer.Game.MainGame.Components;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace SDLib_Experiments.Game.MainGame
     {
 
         public List<Chamber> chamberList;
-        public void Init(object data, int count = 100)
+        public void Init(object data, int count = 300)
         {
             chamberList = new List<Chamber>();
 
@@ -28,7 +29,7 @@ namespace SDLib_Experiments.Game.MainGame
             {
                 chamberList.Add(new Chamber());
                 chamberList.Last().classicNet = new ClassicNet();
-                chamberList.Last().classicNet.Init(new int[] { 11, 120,30, 4 });
+                chamberList.Last().classicNet.Init(new int[] { 11, 10, 5, 5, 5, 4 });
                 CreateChamberSpecificData(data, i, chamberList.Last());
             }
             foreach (var item in chamberList)
@@ -50,9 +51,13 @@ namespace SDLib_Experiments.Game.MainGame
                 }).AddComponent(new AIComponent()
                 {
 
+                }).AddComponent(new GraphicsComponentExtended()
+                {
+                    blendPower = 0.5f
                 }));
             chamber.player = (generaldata as LevelData).GameObjects["AIs"].Last().Value as Player;
         }
+        public CancellationToken? cts;
         public void Tick()
         {
 
@@ -61,11 +66,24 @@ namespace SDLib_Experiments.Game.MainGame
             {
                 // Capture the current value of 'i' in a loop-local variable 'j'
                 int j = i; // Fix: Create a local copy for each iteration
-                ths[j] = new Task(() =>
+                if (cts is null)
                 {
-                    chamberList[j].Tick(); // Now 'j' is stable per task
-                });
-                ths[j].Start();
+
+                    ths[j] = new Task(() =>
+                    {
+                        chamberList[j].Tick(); // Now 'j' is stable per task
+                    });
+                    ths[j].Start();
+                }
+                else
+                {
+
+                    ths[j] = new Task(() =>
+                    {
+                        chamberList[j].Tick(); // Now 'j' is stable per task
+                    }, cts.Value);
+                    ths[j].Start();
+                }
             }
             foreach (var item in ths)
                 item.Wait();
@@ -132,7 +150,7 @@ namespace SDLib_Experiments.Game.MainGame
         {
 
             Vector2 newStart = new Vector2(60 + Random.Shared.Next(-10, 10), 50);
-            Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0))*5;
+            Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0)) * 1;
             if (Random.Shared.NextDouble() < 0.3)
             {
 
@@ -158,12 +176,17 @@ namespace SDLib_Experiments.Game.MainGame
             AverageInGenerationScore = resList.Sum(x => x.score) / (float)resList.Count;
             Queue<Player> freePlayers = new Queue<Player>();
             int c_orig = (int)(resList.Count);
-            float portion = 0.25f;
+            float portion = 0.05f;
             int c = (int)(resList.Count * portion);
             int c_k = (int)(resList.Count * (1 - portion));
+            
+            
+            float DeathEnchancer = 10;
+
+
             for (int i = c; i < resList.Count; i++)
             {
-                if (2f * (i - c) / (float)c_k > Random.Shared.NextDouble())
+                if (DeathEnchancer * (i - c) / (float)c_k > Random.Shared.NextDouble())
                 {
                     freePlayers.Enqueue(resList[i].player);
                     resList.RemoveAt(i);
@@ -172,6 +195,27 @@ namespace SDLib_Experiments.Game.MainGame
             }
             int newBorns = chamberList.Count - resList.Count;
             int og = resList.Count;
+
+            if (newBorns > 0)
+            {
+
+                for (int i = 0; i < newBorns / 2 && newBorns > 0 && i + 1 < og; i += 2)
+                {
+                    resList.Add(Chamber.CrossingOverChamber(ClassicNet.Crossingover(resList[0 + i].classicNet, resList[1 + i].classicNet)));
+                    resList.Last().player = freePlayers.Dequeue();
+                    newBorns--;
+
+
+                    (resList.Last().player.GetComponent<GraphicsComponentExtended>() as GraphicsComponentExtended).main_color
+                        = 
+                        Color.FromNonPremultiplied((resList[0 + i].player.GetComponent<GraphicsComponentExtended>() as GraphicsComponentExtended).main_color.ToVector4() * 0.5f + 
+                        (resList[1 + i].player.GetComponent<GraphicsComponentExtended>() as GraphicsComponentExtended).main_color.ToVector4() * 0.5f)
+
+                        ;
+
+                }
+            }
+
             for (int i = 0; i < newBorns; i++)
             {
                 if (i >= og)
@@ -181,6 +225,13 @@ namespace SDLib_Experiments.Game.MainGame
                 }
                 resList.Add(resList[i].CloneChamber());
                 resList.Last().player = freePlayers.Dequeue();
+                (resList.Last().player.GetComponent<GraphicsComponentExtended>() as GraphicsComponentExtended).main_color
+                    =
+                    SDMonoLibUtilits.Utils.ColorHelper.Mix(
+                        (resList[i].player.GetComponent<GraphicsComponentExtended>() as GraphicsComponentExtended).main_color,
+                        SDMonoLibUtilits.Utils.ColorHelper.GetRandomColor(),
+                        0.9f);
+                ;
 
                 //freePlayers.Add(resList[i].player);
             }
@@ -201,6 +252,7 @@ namespace SDLib_Experiments.Game.MainGame
         int successInRowCounter = 0;
         int totalFails = 0;
         float maxH = int.MinValue;
+        float ticksTillMax = 0;
         public void Init()
         {
             totalFails = 0;
@@ -265,7 +317,7 @@ namespace SDLib_Experiments.Game.MainGame
             if (out_right > out_left && out_right > 0.1) player.ButtonRightPressed();
             if (out_up > 0.1) player.ButtonUpPressed();
 
-            score = -player.Position.Y;
+            score /*+*/= -player.Position.Y/100;
             if (-player.Position.Y > maxH)
             {
                 maxH = -player.Position.Y;
@@ -315,7 +367,7 @@ namespace SDLib_Experiments.Game.MainGame
         }
         public float Evaluate()
         {
-            return score/4  + maxH -  ((
+            return score / 40 + maxH - ((
                 ((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBelowMyY(player.Position) - player.Position).LengthSquared()
 
                 //(((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyY(player.Position) - player.Position).Length()
@@ -326,7 +378,7 @@ namespace SDLib_Experiments.Game.MainGame
         {
             Chamber chamber = new Chamber();
             chamber.classicNet = classicNet.Clone();
-            chamber.classicNet.Mutate(16, 0.0005f);
+            chamber.classicNet.MutateGenome_OneGenome(16, 0.09f);
             chamber.Init();
             return chamber;
         }

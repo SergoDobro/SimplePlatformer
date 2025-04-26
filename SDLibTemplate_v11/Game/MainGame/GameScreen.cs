@@ -17,6 +17,7 @@ using SDMonoLibUtilits.Scenes;
 using SDMonoLibUtilits.Scenes.GUI;
 using SDMonoUI.UI.Base.RectangleBuilder;
 using SDMonoUI.UI.Elements;
+using Simple_Platformer.Game.MainGame.Components;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -87,14 +88,16 @@ namespace SDLibTemplate_v11.Game.MainGame
             classicNet = selector.chamberList.OrderBy(x => x.score).First().classicNet;
 
             //classicNet.Init(3, new int[] { 6, 3, 3 });
-            new Thread(() =>
+            var cts = new CancellationTokenSource();
+            selector.cts = cts.Token;
+            var mainTask = new Task(() =>
             {
                 float extraTime = 0;
                 float maxExtra = 0;
                 for (int i = 0; i < 1000; i++)
                 {
                     safer = true;
-                    Thread.Sleep((500 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500))/10);
+                    Thread.Sleep((100 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500)) / 10);
                     safer = false;
                     Thread.Sleep(100);
                     extraTime = (selector.chamberList.OrderBy(x => -x.player.Position.Y).First().player.Position.Y) / 100;
@@ -105,18 +108,22 @@ namespace SDLibTemplate_v11.Game.MainGame
                     selector.Select();
                     selectionStartedTime = totalTime;
 
-                    for (int j = 0; j < -250+10*i + maxExtra*64; j++)
+                    for (int j = 0; j < -250 + 10 * i + maxExtra * 64; j++)
                     {
 
                         float dt = 1 / 120f;
                         physics.Update(dt);
                         levelData.Player.Update(dt);
+
                         //levelData.Player.ButtonUpPressed();
+
+
+                        selector.Tick();
+
                         foreach (var item in levelData.GameObjects["AIs"])
                         {
                             (item.Value as Player).Update(dt);
                         }
-                        selector.Tick();
                     }
 
                     Thread.Sleep(100);
@@ -166,10 +173,11 @@ namespace SDLibTemplate_v11.Game.MainGame
                     _chamber.score = 0;
                     Thread.Sleep(500);
                 }
-            }).Start();
+            }, cts.Token);
+            mainTask.Start();
 
-
-
+            RootScene.Instance.Exiting += (arg1,arg2) => { cts.Cancel(); };
+            (scenes[0] as GameScreen_GUI).SubscribeOnExit(cts.Cancel);
 
         }
         /// <summary>
@@ -192,7 +200,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             };
             textures["none"].SetData(new Color[] { Color.White });
             textures.Add("simple_sheet", contentManager.Load<Texture2D>("Textures\\simple_sheet"));
-            RootScene.Instance.mainBackround = Color.DarkBlue;
+            RootScene.Instance.mainBackground = Color.DarkBlue;
         }
         float selectionStartedTime = 0;
         float totalTime = 0;
@@ -260,6 +268,40 @@ namespace SDLibTemplate_v11.Game.MainGame
             {
                 camera.Zoom *= 0.99f;
             });
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Space, () =>
+            {
+                levelData.Player.Position = new Vector2(levelData.Player.Position.X, -1000);
+            });
+
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.T, () =>
+            {
+                var bestClassicNet = selector.BestChamber().classicNet;
+                bestClassicNet.Save($"ClassicNet_{classicNet.GetStructureString()}");
+
+                /*
+                 new Player()
+                {
+                    Position = new Vector2(140, 50),
+
+                }.AddComponent(new Rigidbody
+                {
+                    Group = CollisionGroup.Group1,
+                    Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
+                    Acceleration = new Vector2(0, 50 + 100)
+                }).AddComponent(new AIComponent()
+                {
+
+                }).AddComponent(new GraphicsComponentExtended()
+                {
+                    blendPower = 0.5f
+                })
+
+                 */
+
+                //levelData.Player.Position = new Vector2(levelData.Player.Position.X, -1000);
+            });
+
+            
 
         }
 
@@ -285,10 +327,23 @@ namespace SDLibTemplate_v11.Game.MainGame
                       scaleFactor: camera.Zoom,
                       color: new Color(
                           (float)Math.Sin(DateTime.Now.Second * 0.1),
-                      (float)Math.Sin(DateTime.Now.Second*0.14 + 1),
-                      (float)Math.Sin(DateTime.Now.Second* 0.11 + 3))*0.5f,
+                      (float)Math.Sin(DateTime.Now.Second * 0.14 + 1),
+                      (float)Math.Sin(DateTime.Now.Second * 0.11 + 3)) * 0.5f,
                       sheetName: "simple_sheet");
             }
+
+            foreach (var rb in GraphicsComponentExtended.GraphicsExtendedComponents)
+            {
+                rb.Draw(_spriteBatch, textures,
+                      cameraOffset: camera.Position,
+                      scaleFactor: camera.Zoom,
+                      color: new Color(
+                          (float)Math.Sin(DateTime.Now.Second * 0.1),
+                      (float)Math.Sin(DateTime.Now.Second * 0.14 + 1),
+                      (float)Math.Sin(DateTime.Now.Second * 0.11 + 3)) * 0.5f
+                      );
+            }
+
 
             _spriteBatch.End();
             base.Draw(_spriteBatch);

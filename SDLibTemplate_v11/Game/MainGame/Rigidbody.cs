@@ -82,7 +82,7 @@ public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent, IRegista
         PhysicsManager.MainInstance.AddRigidbody(this);
     }
 
-    public void GameObjecctDestroyed()
+    public void GameObjectDestroyed()
     {
         PhysicsManager.MainInstance.RemoveRigidbody(this);
     }
