@@ -21,7 +21,7 @@ namespace SDLib_Experiments.Game.MainGame
     {
 
         public List<Chamber> chamberList;
-        public void Init(object data, int count = 350)
+        public void Init(object data, int count = 500)
         {
             chamberList = new List<Chamber>();
 

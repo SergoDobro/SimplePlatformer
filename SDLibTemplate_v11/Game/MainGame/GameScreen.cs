@@ -66,7 +66,6 @@ namespace SDLibTemplate_v11.Game.MainGame
                 {
                     dataPoints = new Dictionary<int, double[]>()
             {
-                { 0,new double[500]}
             }
                 },
                 rectangle_for_screen = RB_rel.GetRect(
@@ -123,8 +122,8 @@ namespace SDLibTemplate_v11.Game.MainGame
                     chartFrame.chartData.dataPoints.Add(i + 1, selector.chamberList.Select(x =>
                     {
                         double _data = (double)x.Evaluate();
-                        if (_data < -500)
-                            _data = -500;
+                        if (_data < -100)
+                            _data = -100;
                         return _data;
                     }).ToArray());
                     chartFrame.RefreshData();
