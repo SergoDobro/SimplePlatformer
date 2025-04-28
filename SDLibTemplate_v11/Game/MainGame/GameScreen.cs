@@ -14,6 +14,7 @@ using SDLib_Experiments.Game.MainGame;
 using SDLibTemplate_v11.Game.Menu;
 using SDMonoLibUtilits;
 using SDMonoLibUtilits.Scenes;
+using SDMonoLibUtilits.Scenes.Frames;
 using SDMonoLibUtilits.Scenes.GUI;
 using SDMonoUI.UI.Base.RectangleBuilder;
 using SDMonoUI.UI.Elements;
@@ -39,6 +40,8 @@ namespace SDLibTemplate_v11.Game.MainGame
         float[][] lastNetSnapshot;
         CancellationTokenSource cts = new CancellationTokenSource();
         Effect effect;
+
+        ChartFrame chartFrame;
         public override void Init()
         {
             RootScene.Instance.IsMouseVisible = false;
@@ -55,6 +58,24 @@ namespace SDLibTemplate_v11.Game.MainGame
             levelData.LoadPremade();
 
             scenes.Add(new GameScreen_GUI());
+
+            chartFrame =
+            (new SDMonoLibUtilits.Scenes.Frames.ChartFrame()
+            {
+                chartData = new SDMonoLibUtilits.Scenes.Frames.ChartData()
+                {
+                    dataPoints = new Dictionary<int, double[]>()
+            {
+                { 0,new double[500]}
+            }
+                },
+                rectangle_for_screen = RB_rel.GetRect(
+                    0, 1f, 0.6f, 1f,
+                0.1f, 0.1f, 0.05f, 0.05f,
+                RootScene.GetScreenResolution_rect)
+
+            });
+            scenes.Add(chartFrame);
             base.Init();
 
 
@@ -73,13 +94,6 @@ namespace SDLibTemplate_v11.Game.MainGame
             //{
 
             //}));
-
-            for (int i = 0; i < 4; i++)
-            {
-
-
-            }
-
 
 
 
@@ -106,10 +120,18 @@ namespace SDLibTemplate_v11.Game.MainGame
                         extraTime = 0;
                     if (extraTime > maxExtra)
                         maxExtra = extraTime;
+                    chartFrame.chartData.dataPoints.Add(i + 1, selector.chamberList.Select(x =>
+                    {
+                        double _data = (double)x.Evaluate();
+                        if (_data < -500)
+                            _data = -500;
+                        return _data;
+                    }).ToArray());
+                    chartFrame.RefreshData();
                     selector.Select();
                     selectionStartedTime = totalTime;
 
-                    for (int j = 0; j < -250 + 10 * i + maxExtra * 64; j++)
+                    for (int j = 0; j < -50 + 15 * i /*+ maxExtra * 64*/; j++)
                     {
 
                         float dt = 1 / 120f;
@@ -177,7 +199,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             }, cts.Token);
             mainTask.Start();
 
-            RootScene.Instance.Exiting += (arg1,arg2) => { cts.Cancel(); };
+            RootScene.Instance.Exiting += (arg1, arg2) => { cts.Cancel(); };
             (scenes[0] as GameScreen_GUI).SubscribeOnExit(cts.Cancel);
 
         }
@@ -203,7 +225,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             textures.Add("simple_sheet", contentManager.Load<Texture2D>("Textures\\simple_sheet"));
             RootScene.Instance.mainBackground = Color.DarkBlue;
             effect = contentManager.Load<Effect>("Shaders\\CoolPlatform");
-            
+
         }
         float selectionStartedTime = 0;
         float totalTime = 0;
@@ -230,10 +252,10 @@ namespace SDLibTemplate_v11.Game.MainGame
             if (safer)
             {
                 physics.Update(dt / 2);
-                levelData.Player.Update(dt/2);
+                levelData.Player.Update(dt / 2);
                 foreach (var item in levelData.GameObjects["AIs"])
                 {
-                    (item.Value as Player).Update(dt/2);
+                    (item.Value as Player).Update(dt / 2);
                 }
                 selector.Tick();
 
@@ -274,7 +296,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 //cts.Cancel();
 
             });
-            
+
 
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Q, () =>
@@ -319,7 +341,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 //levelData.Player.Position = new Vector2(levelData.Player.Position.X, -1000);
             });
 
-            
+
 
         }
 
@@ -338,9 +360,9 @@ namespace SDLibTemplate_v11.Game.MainGame
                       color: Color.White);
             }
             _spriteBatch.End();
-            
+
             _spriteBatch.Begin(SpriteSortMode.Deferred,
-                effect: effect); 
+                effect: effect);
             foreach (var rb in TileGraphicsComponent.tileGraphicsComponents)
             {
                 rb.Draw(_spriteBatch, textures,

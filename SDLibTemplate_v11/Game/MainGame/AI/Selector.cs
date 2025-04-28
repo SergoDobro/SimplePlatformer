@@ -21,7 +21,7 @@ namespace SDLib_Experiments.Game.MainGame
     {
 
         public List<Chamber> chamberList;
-        public void Init(object data, int count = 50)
+        public void Init(object data, int count = 350)
         {
             chamberList = new List<Chamber>();
 
@@ -29,7 +29,7 @@ namespace SDLib_Experiments.Game.MainGame
             {
                 chamberList.Add(new Chamber());
                 chamberList.Last().classicNet = new ClassicNet();
-                chamberList.Last().classicNet.Init(new int[] { 11, 10, 5, 5, 5, 4 });
+                chamberList.Last().classicNet.Init(new int[] { 11, 5, 5, 5, 4 });
                 CreateChamberSpecificData(data, i, chamberList.Last());
             }
             foreach (var item in chamberList)
@@ -150,8 +150,8 @@ namespace SDLib_Experiments.Game.MainGame
         public void Reload()
         {
 
-            Vector2 newStart = new Vector2(60 + Random.Shared.Next(-10, 10), 50);
-            Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0)) * 1;
+            Vector2 newStart = new Vector2(60 + Random.Shared.Next(-1, 1), 50);
+            Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0)) * 0.5f;
             if (Random.Shared.NextDouble() < 0.3)
             {
 
@@ -182,7 +182,7 @@ namespace SDLib_Experiments.Game.MainGame
             int c_k = (int)(resList.Count * (1 - portion));
             
             
-            float DeathEnchancer = 10;
+            float DeathEnchancer = 5;
 
 
             for (int i = c; i < resList.Count; i++)
