@@ -36,8 +36,10 @@ namespace SDLibTemplate_v11.Game.MainGame
             tickWaiters[0] = false;
             tickWaiters[1] = false;
             tickWaiters[2] = false;
+            tickWaiters[3] = false;
+            pushreload -= dt;
         }
-        bool[] tickWaiters = new bool[3] { false, false, false};
+        bool[] tickWaiters = new bool[] { false, false, false, false };
 
         public void ButtonRightPressed()
         {
@@ -50,6 +52,15 @@ namespace SDLibTemplate_v11.Game.MainGame
             if (!tickWaiters[1])
                 RigidBody.Velocity += new Vector2(-400, 0) * _dt;
             tickWaiters[1] = true;
+        }
+
+        float pushreload = 0;
+        public void ButtonPush()
+        {
+            if (!tickWaiters[3] && pushreload <=0)
+                RigidBody.Velocity += new Vector2(Math.Sign(RigidBody.Velocity.X)*400, 0) * _dt;
+            pushreload = 1;
+            tickWaiters[3] = true;
         }
     }
 }

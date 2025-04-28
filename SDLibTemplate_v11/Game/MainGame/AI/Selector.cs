@@ -21,7 +21,7 @@ namespace SDLib_Experiments.Game.MainGame
     {
 
         public List<Chamber> chamberList;
-        public void Init(object data, int count = 300)
+        public void Init(object data, int count = 50)
         {
             chamberList = new List<Chamber>();
 
@@ -82,7 +82,8 @@ namespace SDLib_Experiments.Game.MainGame
                     {
                         chamberList[j].Tick(); // Now 'j' is stable per task
                     }, cts.Value);
-                    ths[j].Start();
+                    if (!ths[j].IsCompleted)
+                        ths[j].Start();
                 }
             }
             foreach (var item in ths)

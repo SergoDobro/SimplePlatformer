@@ -37,7 +37,8 @@ namespace SDLibTemplate_v11.Game.MainGame
         public ClassicNet classicNet;
         Selector selector;
         float[][] lastNetSnapshot;
-
+        CancellationTokenSource cts = new CancellationTokenSource();
+        Effect effect;
         public override void Init()
         {
             RootScene.Instance.IsMouseVisible = false;
@@ -88,10 +89,10 @@ namespace SDLibTemplate_v11.Game.MainGame
             classicNet = selector.chamberList.OrderBy(x => x.score).First().classicNet;
 
             //classicNet.Init(3, new int[] { 6, 3, 3 });
-            var cts = new CancellationTokenSource();
             selector.cts = cts.Token;
             var mainTask = new Task(() =>
             {
+                //return;
                 float extraTime = 0;
                 float maxExtra = 0;
                 for (int i = 0; i < 1000; i++)
@@ -201,6 +202,8 @@ namespace SDLibTemplate_v11.Game.MainGame
             textures["none"].SetData(new Color[] { Color.White });
             textures.Add("simple_sheet", contentManager.Load<Texture2D>("Textures\\simple_sheet"));
             RootScene.Instance.mainBackground = Color.DarkBlue;
+            effect = contentManager.Load<Effect>("Shaders\\CoolPlatform");
+            
         }
         float selectionStartedTime = 0;
         float totalTime = 0;
@@ -258,6 +261,21 @@ namespace SDLibTemplate_v11.Game.MainGame
                 levelData.Player.ButtonUpPressed();
 
             });
+
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.LeftControl, () =>
+            {
+                levelData.Player.ButtonPush();
+
+            });
+
+
+            RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.LeftControl, () =>
+            {
+                //cts.Cancel();
+
+            });
+            
+
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.Q, () =>
             {
@@ -319,7 +337,10 @@ namespace SDLibTemplate_v11.Game.MainGame
                       scaleFactor: camera.Zoom,
                       color: Color.White);
             }
-
+            _spriteBatch.End();
+            
+            _spriteBatch.Begin(SpriteSortMode.Deferred,
+                effect: effect); 
             foreach (var rb in TileGraphicsComponent.tileGraphicsComponents)
             {
                 rb.Draw(_spriteBatch, textures,
@@ -331,7 +352,9 @@ namespace SDLibTemplate_v11.Game.MainGame
                       (float)Math.Sin(DateTime.Now.Second * 0.11 + 3)) * 0.5f,
                       sheetName: "simple_sheet");
             }
+            _spriteBatch.End();
 
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
             foreach (var rb in GraphicsComponentExtended.GraphicsExtendedComponents)
             {
                 rb.Draw(_spriteBatch, textures,
