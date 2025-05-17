@@ -1,10 +1,12 @@
-﻿using GameLogic;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System.ComponentModel.Design;
 using SDMonoLibUtilits.Scenes;
+using SDLibTemplate_v11.Game.MainGame;
+using Simple_Platformer.Game.MainGame.Components;
+using GameComponent = SDLibTemplate_v11.Game.MainGame.GameComponent;
 
-namespace SDLibTemplate_v11.Game.MainGame
+namespace Simple_Platformer.Game.MainGame.GameObjectSystem
 {
     public class GameObject : Scene
     {
@@ -48,10 +50,42 @@ namespace SDLibTemplate_v11.Game.MainGame
                     (item as IRegistable).GameObjectDestroyed();
                 }
             }
+            if (myGameObjectUpdater is not null)
+                myGameObjectUpdater.DestroyGameObject(this);
+
         }
         // TODO: Add a 'Category' and 'Id' property here if we need to map objects to dictionaries
         // [JsonIgnore] // Uncomment if adding these later
         // public string Category { get; set; } = "Misc";
         //public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        public GameObjectUpdater myGameObjectUpdater = null;
+        public GameObject Instantiate(GameObject gameObject, string gameObjectUpdater_name = "main")
+        {
+            if (GameObjectUpdater.gameObjectUpdater.ContainsKey(gameObjectUpdater_name))
+                GameObjectUpdater.gameObjectUpdater[gameObjectUpdater_name].InstantiateGameObject(gameObject);
+            else
+                GameObjectUpdater.gameObjectUpdater.Add(gameObjectUpdater_name, new GameObjectUpdater());
+
+
+            myGameObjectUpdater = GameObjectUpdater.gameObjectUpdater[gameObjectUpdater_name];
+            return gameObject;
+        }
+    }
+    public class GameObjectUpdater : ComplexScene
+    {
+        public static Dictionary<string, GameObjectUpdater> gameObjectUpdater = new Dictionary<string, GameObjectUpdater>();
+
+        public void InstantiateGameObject(GameObject gameObject)
+        {
+            scenes.Add(gameObject);
+        }
+        public void DestroyGameObject(GameObject gameObject)
+        {
+            if (scenes.Contains(gameObject))
+                scenes.Remove(gameObject);
+        }
+
+
     }
 }

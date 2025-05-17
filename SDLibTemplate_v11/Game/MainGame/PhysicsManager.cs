@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Simple_Platformer.Game.MainGame.Components;
 using System;
 using System.Collections.Generic;
 

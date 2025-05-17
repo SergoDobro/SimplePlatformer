@@ -1,6 +1,6 @@
 ﻿using ClassikNet;
-using SDLibTemplate_v11.Game.MainGame;
 using Simple_Platformer.Game.MainGame.AI;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using System;
 using System.Collections;
 using System.Collections.Generic;

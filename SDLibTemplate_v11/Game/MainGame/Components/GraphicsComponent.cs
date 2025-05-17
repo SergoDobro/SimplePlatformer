@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
+using SDLibTemplate_v11.Game.MainGame;
+using GameComponent = SDLibTemplate_v11.Game.MainGame.GameComponent;
 
-namespace SDLibTemplate_v11.Game.MainGame
+namespace Simple_Platformer.Game.MainGame.Components
 {
     public class GraphicsComponent : GameComponent
-    { 
+    {
         public void Draw(SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures,
                     Vector2 cameraOffset, float scaleFactor = 1.0f, Color? color = null)
         {
@@ -30,8 +32,8 @@ namespace SDLibTemplate_v11.Game.MainGame
                 // Calculate drawing parameters with global scaling
                 Vector2 origin = new Vector2(texture.Width / 2f, texture.Height / 2f);
                 Vector2 scale = new Vector2(
-                    (collider.Size.X / texture.Width) * scaleFactor,
-                    (collider.Size.Y / texture.Height) * scaleFactor
+                    collider.Size.X / texture.Width * scaleFactor,
+                    collider.Size.Y / texture.Height * scaleFactor
                 );
 
                 // Draw the collider with all transformations

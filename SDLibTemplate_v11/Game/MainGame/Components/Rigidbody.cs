@@ -1,14 +1,15 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GameLogic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SDLibTemplate_v11.Game.MainGame;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace GameLogic;
+namespace Simple_Platformer.Game.MainGame.Components;
 
 public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent, IRegistable
-{ 
+{
 
     [JsonIgnore]
     public Vector2 Position { get { return gameObject.Position; } set { gameObject.Position = value; } }
@@ -54,8 +55,8 @@ public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent, IRegista
             // Calculate drawing parameters with global scaling
             Vector2 origin = new Vector2(texture.Width / 2f, texture.Height / 2f);
             Vector2 scale = new Vector2(
-                (collider.Size.X / texture.Width) * scaleFactor,
-                (collider.Size.Y / texture.Height) * scaleFactor
+                collider.Size.X / texture.Width * scaleFactor,
+                collider.Size.Y / texture.Height * scaleFactor
             );
 
             // Draw the collider with all transformations

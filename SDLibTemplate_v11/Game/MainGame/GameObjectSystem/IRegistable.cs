@@ -1,4 +1,4 @@
-﻿namespace SDLibTemplate_v11.Game.MainGame
+﻿namespace Simple_Platformer.Game.MainGame.GameObjectSystem
 {
     public interface IRegistable
     {

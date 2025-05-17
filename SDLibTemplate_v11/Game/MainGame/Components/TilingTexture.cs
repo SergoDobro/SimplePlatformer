@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-namespace SDLibTemplate_v11.Game.MainGame
+namespace Simple_Platformer.Game.MainGame.Components
 {
     public class TilingTexture
     {
         public static Dictionary<string, Texture2D> SpriteSheets { get; private set; }
         public static Rectangle GetRectanlge(int id, int textureScale)
         {
-            Point[] shifts = new Point[] { 
+            Point[] shifts = new Point[] {
             new Point(0,0),
             new Point(1,0),
             new Point(2,0),
@@ -27,8 +27,8 @@ namespace SDLibTemplate_v11.Game.MainGame
             new Point(1,5),
 
             };
-            Rectangle rect = new Rectangle(shifts[id].X * textureScale/3,
-                shifts[id].Y * textureScale/3, textureScale / 3, textureScale/3);
+            Rectangle rect = new Rectangle(shifts[id].X * textureScale / 3,
+                shifts[id].Y * textureScale / 3, textureScale / 3, textureScale / 3);
             return rect;
         }
         public static int ConvertToIndex(bool groundLeft, bool groundTop, bool groundRight, bool groundBottom)

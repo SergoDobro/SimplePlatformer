@@ -20,6 +20,7 @@ using SDMonoLibUtilits.Scenes.GUI;
 using SDMonoUI.UI.Base.RectangleBuilder;
 using SDMonoUI.UI.Elements;
 using Simple_Platformer.Game.MainGame.Components;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using Simple_Platformer.Game.MainGame.Other;
 
 namespace SDLibTemplate_v11.Game.MainGame
@@ -55,6 +56,8 @@ namespace SDLibTemplate_v11.Game.MainGame
             // Setup
             physics = new PhysicsManager();
             physics.SetCollision(CollisionGroup.Group1, CollisionGroup.Group2, true);
+            physics.SetCollision(CollisionGroup.Group1, CollisionGroup.Group3, true);
+            physics.SetCollision(CollisionGroup.Group2, CollisionGroup.Group3, true);
 
             levelData = new LevelDaata_Level1();
             levelData.LoadPremade();
@@ -275,6 +278,19 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             }
 
+            try
+            {
+
+                foreach (var item in GameObjectUpdater.gameObjectUpdater.Keys)
+                {
+                    GameObjectUpdater.gameObjectUpdater[item].Update(dt);
+                }
+
+            }
+            catch
+            {
+
+            }
         }
 
         public void SetBindings()
@@ -334,6 +350,11 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             });
 
+            RootScene.controls.keyBindingsData["game_controls"].SetClick(Keys.Enter, () =>
+            {
+                
+                levelData.Player.LaunchShot();
+            });
 
 
 
@@ -377,7 +398,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                       cameraOffset: camera.Position,
                       scaleFactor: camera.Zoom,
                       color: new Color(
-                          (float)Math.Sin(DateTime.Now.Second * 0.1  + beatDelta),
+                          (float)Math.Sin(DateTime.Now.Second * 0.1 + beatDelta),
                       (float)Math.Sin(DateTime.Now.Second * 0.14 + 1 + beatDelta),
                       (float)Math.Sin(DateTime.Now.Second * 0.11 + 3 + beatDelta)) * 0.5f
                       );

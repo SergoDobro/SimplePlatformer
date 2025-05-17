@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {

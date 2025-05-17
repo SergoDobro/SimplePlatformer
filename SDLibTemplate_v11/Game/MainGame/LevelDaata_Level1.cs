@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System.Linq;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
+using Simple_Platformer.Game.MainGame.Components;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {

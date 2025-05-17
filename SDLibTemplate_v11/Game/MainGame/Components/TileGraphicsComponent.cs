@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 
-namespace SDLibTemplate_v11.Game.MainGame
+namespace Simple_Platformer.Game.MainGame.Components
 {
     public class TileGraphicsComponent : GraphicsComponent, IRegistable
     {
-        public int tilesheetPosId = Random.Shared.Next(0,14);
+        public int tilesheetPosId = Random.Shared.Next(0, 14);
         public void Draw(SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures,
                     Vector2 cameraOffset, string sheetName, float scaleFactor = 1.0f, Color? color = null)
         {
@@ -30,17 +31,17 @@ namespace SDLibTemplate_v11.Game.MainGame
 
                 float sca = 3f;
                 // Calculate drawing parameters with global scaling
-                Vector2 origin = new Vector2(texture.Width / 2f, texture.Height / 4f)/ sca;
+                Vector2 origin = new Vector2(texture.Width / 2f, texture.Height / 4f) / sca;
                 Vector2 scale = new Vector2(
-                    (collider.Size.X / texture.Width) * scaleFactor,
-                    (2*collider.Size.Y / texture.Height) * scaleFactor
-                )* sca;
+                    collider.Size.X / texture.Width * scaleFactor,
+                    2 * collider.Size.Y / texture.Height * scaleFactor
+                ) * sca;
 
                 // Draw the collider with all transformations
                 spriteBatch.Draw(
                     texture,
                     worldPosition,
-                    TilingTexture.GetRectanlge(tilesheetPosId, (int)(texture.Width)),
+                    TilingTexture.GetRectanlge(tilesheetPosId, texture.Width),
                     drawColor,
                     gameObject.Rotation,
                     origin,

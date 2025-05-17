@@ -3,6 +3,7 @@ using GameLogic;
 using Microsoft.Xna.Framework;
 using SDLibTemplate_v11.Game.MainGame;
 using Simple_Platformer.Game.MainGame.Components;
+using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;

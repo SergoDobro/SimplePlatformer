@@ -1,4 +1,6 @@
-﻿namespace SDLibTemplate_v11.Game.MainGame
+﻿using Simple_Platformer.Game.MainGame.GameObjectSystem;
+
+namespace SDLibTemplate_v11.Game.MainGame
 {
     public class GameComponent
     {
