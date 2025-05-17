@@ -11,10 +11,11 @@ namespace SDLibTemplate_v11.Game.MainGame
         public override void LoadPremade()
         {
 
+            spawnPoint = new Vector2(210, 50);
             // Create objects
             this.Player = new Player()
             {
-                    Position = new Vector2(210, 50),
+                    Position = spawnPoint,
                 
             };
             this.Player.AddComponent(new Rigidbody

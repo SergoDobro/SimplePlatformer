@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using SDLibTemplate_v11.Game.MainGame;
 using SDMonoLibUtilits;
 using SDMonoLibUtilits.Scenes;
@@ -14,6 +15,7 @@ using SDMonoLibUtilits.Scenes.GUI;
 using SDMonoLibUtilits.Utils;
 using SDMonoUI.UI.Base;
 using SDMonoUI.UI.Elements;
+using Simple_Platformer.Game.MainGame.Other;
 
 namespace SDLibTemplate_v11.Game.Menu
 {
@@ -25,8 +27,30 @@ namespace SDLibTemplate_v11.Game.Menu
 
             RootScene.Instance.IsMouseVisible = false;
 
-            scenes.Add(new GUI_Menu());
+            RootScene.Instance.SetWindowSize(1224, 896);
+            RootScene.Instance.SetWindowResolutionSize(700, 600);
+            RootScene.Instance.mainBackground = Color.Tan;
 
+
+
+            var slideshow = new Simple_Platformer.Game.MainGame.Other.ImageSlideshow(RootScene.Instance.GraphicsDevice)
+            {
+                Path = "Content\\Photos",
+                TargetRectangle = RootScene.GetScreenResolution_rect
+            };
+            slideshow.NextImage();
+            scenes.Add(slideshow);
+
+            RootScene.controls.AddBinding(new SDMonoLibUtilits.KeyBindingsData(), "menu");
+
+            RootScene.controls.keyBindingsData["menu"].SetContinuous(Keys.R, () =>
+            {
+                slideshow.NextImage();
+
+            });
+
+
+            scenes.Add(new GUI_Menu());
             base.Init();
         }
         public override void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
@@ -52,9 +76,6 @@ namespace SDLibTemplate_v11.Game.Menu
         float targetDisplayedScore = 0;
         protected override void CreateUI()
         {
-            RootScene.Instance.SetWindowSize(1224, 896);
-            RootScene.Instance.SetWindowResolutionSize(700, 600);
-            RootScene.Instance.mainBackground = Color.Tan;
             DUIE_Outline.standartOutline = 2;
             DUIE_Outline.standartOutlineColor = new Color(Color.White, 0.8f);
 

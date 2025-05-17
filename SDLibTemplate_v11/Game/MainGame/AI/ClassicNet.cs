@@ -15,33 +15,126 @@ namespace ClassikNet
         public int[] layerInfo;
         public float[][,] layerNeuron_connections;
         public float[][] layerNeurons_biases;
-        static public Dictionary<string, int> layerInputPosition = new Dictionary<string, int>()
-        {
-            { "positionX", 0},
-            { "positionY", 1},
-            { "distToTopX", 2},
-            { "distToTopY", 3},
-            { "distToBotX", 4},
-            { "distToBotY", 5},
-            { "distToTopTopX", 6},
-            { "distToTopTopY", 7},
-            { "velX", 8},
-            { "velY", 9},
-            { "memCell", 10},
-            
-        };
+        public Dictionary<string, int> layerInputPosition;
+        public Dictionary<int, string> layerOutputPosition_descriptor;
 
-        static public Dictionary<int, string> layerOutputPosition_descriptor = new Dictionary<int, string>()
-        {
-            {  0, "out_left" },
-            {  1, "out_up" },
-            {  2, "out_right" },
-            {  3, "memCell" },
-            
+        public virtual bool UseFastDefiner { get; } = true;
+        public virtual bool UseAutoDefineInOutLayerSizes { get; } = true;
 
-        };
-        public void Init(int[] layerSizes)
+        public virtual string[] DefineOutput_Fast()
         {
+            return new string[]
+                {
+                    "out_left",
+                    "out_up",
+                    "out_right",
+                    "memCell",
+                };
+        }
+        public virtual Dictionary<int, string> DefineOutput_Full()
+        {
+            return new Dictionary<int, string>()
+            {
+
+                {  0, "out_left" },
+                {  1, "out_up" },
+                {  2, "out_right" },
+                {  3, "memCell" },
+
+            };
+        }
+        private Dictionary<int, string> DefineOutput()
+        {
+            if (!UseFastDefiner)
+                return DefineOutput_Full();
+            else
+            {
+                var arr = DefineOutput_Fast();
+                var res = new Dictionary<int, string>();
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    res.Add(i, arr[i]);
+                }
+                return res;
+            }
+        }
+
+
+        public virtual string[] DefineInput_Fast()
+        {
+            return new string[]
+                {
+                    "positionX",
+                    "positionY",
+                    "distToTopX",
+                    "distToTopY",
+                    "distToBotX",
+                    "distToBotY",
+                    "distToTopTopX",
+                    "distToTopTopY",
+                    "velX",
+                    "velY",
+                    "memCell",
+                };
+        }
+
+        public virtual Dictionary<string, int> DefineInput_Full()
+        {
+            return new Dictionary<string, int>()
+            {
+                { "positionX", 0},
+                { "positionY", 1},
+                { "distToTopX", 2},
+                { "distToTopY", 3},
+                { "distToBotX", 4},
+                { "distToBotY", 5},
+                { "distToTopTopX", 6},
+                { "distToTopTopY", 7},
+                { "velX", 8},
+                { "velY", 9},
+                { "memCell", 10},
+
+            };
+        }
+        private Dictionary<string, int> DefineInput()
+        {
+            if (!UseFastDefiner)
+                return DefineInput_Full();
+            else
+            {
+                var arr = DefineInput_Fast();
+                var res = new Dictionary<string, int>();
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    res.Add(arr[i], i);
+                }
+                return res;
+            }
+        }
+
+
+        public void Init(int[] layerSizes, bool layers_provided_using_full_size = true)
+        {
+
+            layerOutputPosition_descriptor = DefineOutput();
+            layerInputPosition = DefineInput();
+
+
+            if (UseAutoDefineInOutLayerSizes && !layers_provided_using_full_size)
+            {
+                var _arr = new int[layerSizes.Length + 2];
+                for (int i = 0; i < layerSizes.Length; i++)
+                {
+                    _arr[i + 1] = layerSizes[i];
+                }
+
+                layerSizes = _arr;
+                layerSizes[0] = layerInputPosition.Count;
+                layerSizes[layerSizes.Length - 1] = layerOutputPosition_descriptor.Count;
+            }
+
+
+
             int layerCount = layerSizes.Length;
             layerInfo = new int[layerCount];
             layerNeuron_connections = new float[layerCount - 1][,]; //Last layer don't have such
@@ -132,10 +225,15 @@ namespace ClassikNet
             return nextLayer;
         }
 
+        public virtual ClassicNet GetCloningInstance()
+        {
+            return new ClassicNet();
+            
+        }
         public ClassicNet Clone()
         {
 
-            ClassicNet classicNet = new ClassicNet();
+            ClassicNet classicNet = GetCloningInstance();
 
             int layercount = layerInfo.Length;
 
@@ -199,7 +297,7 @@ namespace ClassikNet
                     layerNeurons_biases[layerOfMutation][j] += mutagenPower * (float)(Random.Shared.NextDouble() - 0.5);
             }
 
-            layerOfMutation = Random.Shared.Next(0, layerInfo.Length-1);
+            layerOfMutation = Random.Shared.Next(0, layerInfo.Length - 1);
 
             for (int j = 0; j < layerInfo[layerOfMutation]; j++)
             {
@@ -231,7 +329,7 @@ namespace ClassikNet
         public static ClassicNet Crossingover(ClassicNet parentA, ClassicNet parentB)
         {
 
-            ClassicNet classicNet = new ClassicNet();
+            ClassicNet classicNet = parentA.GetCloningInstance();
 
             int layercount = parentA.layerInfo.Length;
 
@@ -270,7 +368,7 @@ namespace ClassikNet
         float _temp = 0;
         public float Activate(float number)
         {
-            return number / ((float)Math.Sqrt(1 + number * number));
+            //return number / ((float)Math.Sqrt(1 + number * number));
             return number < 0 ? 0 : number;
             _temp = (float)Math.Pow(2.71, -2 * number);
             return (float)((1 - _temp) / (1 + _temp));
@@ -284,7 +382,7 @@ namespace ClassikNet
         }
 
 
-        
+
         public ClassicNet LoadInfo(string path)
         {
             try

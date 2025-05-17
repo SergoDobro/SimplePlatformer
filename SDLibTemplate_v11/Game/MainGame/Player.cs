@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GameLogic;
+using Microsoft.Xna.Framework;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -61,6 +63,13 @@ namespace SDLibTemplate_v11.Game.MainGame
                 RigidBody.Velocity += new Vector2(Math.Sign(RigidBody.Velocity.X)*400, 0) * _dt;
             pushreload = 1;
             tickWaiters[3] = true;
+        }
+    }
+    public class Bullet : GameObject
+    {
+        public override void Update(float dt)
+        {
+            base.Update(dt);
         }
     }
 }

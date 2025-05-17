@@ -73,6 +73,10 @@ namespace Simple_Platformer.Game.MainGame.Components
         }
 
         public static List<GraphicsComponentExtended> GraphicsExtendedComponents = new List<GraphicsComponentExtended>();
+        public void ResetGlobal()
+        {
+            GraphicsExtendedComponents.Clear();
+        }
         public void Register()
         {
             GraphicsExtendedComponents.Add(this);

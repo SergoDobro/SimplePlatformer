@@ -86,4 +86,13 @@ public class Rigidbody : SDLibTemplate_v11.Game.MainGame.GameComponent, IRegista
     {
         PhysicsManager.MainInstance.RemoveRigidbody(this);
     }
+
+    public void ResetGlobal()
+    {
+        for (int i = 0; i < PhysicsManager.MainInstance._rigidbodies.Count; i++)
+        {
+            PhysicsManager.MainInstance.RemoveRigidbody(PhysicsManager.MainInstance._rigidbodies[i]);
+            i--;
+        }
+    }
 }

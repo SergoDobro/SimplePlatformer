@@ -20,6 +20,8 @@ namespace SDLibTemplate_v11.Game.MainGame
         // The star of the show!
         public Player Player { get; set; } = new ();
 
+        public Vector2 spawnPoint { get; set; }
+
         // Magic happens here: Load JSON into this object
         public void LoadInfo(string path)
         {
