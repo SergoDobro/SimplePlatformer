@@ -25,9 +25,6 @@ namespace SDLib_Experiments.Game.MainGame
                     Group = CollisionGroup.Group1,
                     Colliders = { new Collider { Offset = Vector2.Zero, Size = new Vector2(2, 4) } },
                     Acceleration = new Vector2(0, 50 + 100)
-                }).AddComponent(new AIComponent()
-                {
-
                 }).AddComponent(new GraphicsComponentExtended()
                 {
                     blendPower = 0.5f
@@ -40,7 +37,7 @@ namespace SDLib_Experiments.Game.MainGame
         public void Reload()
         {
 
-            Vector2 newStart = new Vector2(60 + Random.Shared.Next(-1, 1), 50);
+            Vector2 newStart = new Vector2(60+Random.Shared.Next(-1, 1)*90, 50);
             Vector2 newVelocity = new Vector2(Random.Shared.Next(-20, 20), -Random.Shared.Next(-20, 0)) * 0.1f;
             if (Random.Shared.NextDouble() < 0.3)
             {

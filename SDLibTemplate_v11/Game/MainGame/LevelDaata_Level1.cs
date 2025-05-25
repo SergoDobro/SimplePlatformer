@@ -8,7 +8,7 @@ using Simple_Platformer.Game.MainGame.Components;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
-    public class LevelDaata_Level1 : LevelData
+    public class LevelDaata_Level1 : LevelData, IAIPlatformerJumper
     {
         public override void LoadPremade()
         {
@@ -194,7 +194,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             //return plat.Position;
         }
 
-        internal Vector2 GetClosestPlatformBeyondMyYX2(Vector2 position)
+        public Vector2 GetClosestPlatformBeyondMyYX2(Vector2 position)
         {
             var plat = leftPlatformPositions.First();
             for (int i = 0; i < leftPlatformPositions.Count - 3; i++)

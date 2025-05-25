@@ -19,6 +19,7 @@ using SDMonoLibUtilits.Scenes.Frames;
 using SDMonoLibUtilits.Scenes.GUI;
 using SDMonoUI.UI.Base.RectangleBuilder;
 using SDMonoUI.UI.Elements;
+using Simple_Platformer.Game.MainGame.AI;
 using Simple_Platformer.Game.MainGame.Components;
 using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using Simple_Platformer.Game.MainGame.Other;
@@ -59,7 +60,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             physics.SetCollision(CollisionGroup.Group1, CollisionGroup.Group3, true);
             physics.SetCollision(CollisionGroup.Group2, CollisionGroup.Group3, true);
 
-            levelData = new LevelDaata_Level1();
+            levelData = new LevelDaata_Level2();
             levelData.LoadPremade();
 
             scenes.Add(new GameScreen_GUI());
@@ -150,7 +151,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                 for (int i = 0; i < 1000; i++)
                 {
                     safer = true;
-                    Thread.Sleep((100 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500)) / 10);
+                    Thread.Sleep((20 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500)) / 10);
                     safer = false;
                     Thread.Sleep(100);
                     extraTime = (selector.chamberList.OrderBy(x => -x.player.Position.Y).First().player.Position.Y) / 100;
@@ -158,18 +159,18 @@ namespace SDLibTemplate_v11.Game.MainGame
                         extraTime = 0;
                     if (extraTime > maxExtra)
                         maxExtra = extraTime;
-                    chartFrame.chartData.dataPoints.Add(i + 1, selector.chamberList.Select(x =>
+                    chartFrame.chartData.dataPoints.Add(i, selector.chamberList.Select(x =>
                     {
                         double _data = (double)x.Evaluate();
-                        if (_data < -100)
-                            _data = -100;
+                        if (_data < -200)
+                            _data = -200;
                         return _data;
                     }).ToArray());
                     chartFrame.RefreshData();
                     selector.Select();
                     selectionStartedTime = totalTime;
 
-                    for (int j = 0; j < 50 + 15 * (i - i % 3) /*+ maxExtra * 64*/; j++)
+                    for (int j = 0; j < 150 + ChamberParameterLoader.LoadParametrs("timeIncreaser") * (i - i % ChamberParameterLoader.LoadParametrs("stableGenerationTime")) /*+ maxExtra * 64*/; j++)
                     {
 
                         float dt = 1 / 120f;
@@ -345,8 +346,25 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.T, () =>
             {
-                var bestClassicNet = selector.BestChamber().classicNet;
-                bestClassicNet.Save($"ClassicNet_{classicNet.GetStructureString()}");
+                if (!Directory.Exists("TrainedModels"))
+                    Directory.CreateDirectory("TrainedModels");
+                if (!Directory.Exists($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}"))
+                    Directory.CreateDirectory($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}");
+                for (int i = 0; i < selector.chamberList.Count*0.5f; i++)
+                {
+                    var bestClassicNet = selector.chamberList[i].classicNet;
+                    bestClassicNet.Save($"TrainedModels\\ClassicNet_{classicNet.GetStructureString()}\\net_{i}.cn");
+                }
+
+            });
+
+            RootScene.controls.keyBindingsData["game_controls"].SetClick(Keys.Y, () =>
+            {
+
+                for (int i = 0; i < selector.chamberList.Count * 0.5f; i++)
+                {
+                    selector.chamberList[i].classicNet = ClassicNet.LoadFromFile($"TrainedModels\\ClassicNet_{selector.chamberList[i].classicNet.GetStructureString()}\\net_{i}.cn", selector.chamberList[0].classicNet.GetCloningInstance());
+                }
 
             });
 

@@ -36,7 +36,8 @@ namespace SDLibTemplate_v11.Game.Menu
             var slideshow = new Simple_Platformer.Game.MainGame.Other.ImageSlideshow(RootScene.Instance.GraphicsDevice)
             {
                 Path = "Content\\Photos",
-                TargetRectangle = RootScene.GetScreenResolution_rect
+                TargetRectangle = RootScene.GetScreenResolution_rect,
+                TransitionDuration = 3
             };
             slideshow.NextImage();
             scenes.Add(slideshow);
@@ -58,8 +59,16 @@ namespace SDLibTemplate_v11.Game.Menu
             base.LoadContent(contentManager, graphicsDevice);
             scenes[0].Init();
         }
+
+        float del = 4f;
         public override void Update(float dt)
         {
+            del -= dt;
+            if (del<0)
+            {
+                del = 4f;
+                (scenes[0] as ImageSlideshow).NextImage();
+            }
             base.Update(dt);
         }
         public override void Draw(SpriteBatch _spriteBatch)

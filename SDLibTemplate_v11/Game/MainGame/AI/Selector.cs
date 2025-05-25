@@ -59,6 +59,10 @@ namespace SDLib_Experiments.Game.MainGame
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine(i);
+                        System.Diagnostics.Debug.WriteLine(ex.Message);
+                        System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+
+                        chamberList[i].classicNet = chamberList[0].classicNet.Clone();
                     }
                 }
                 return;

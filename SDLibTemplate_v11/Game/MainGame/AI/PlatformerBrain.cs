@@ -35,6 +35,7 @@ namespace Simple_Platformer.Game.MainGame.AI
                     "distToTopTopY",
                     "velX",
                     "velY",
+                    "CanJump",
                     "memCell",
                     "memCell1",
                     "memCell2",

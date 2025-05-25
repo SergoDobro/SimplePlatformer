@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ClassikNet
 {
-    public class ClassicNet
+    public partial class ClassicNet
     {
         public int[] layerInfo;
         public float[][,] layerNeuron_connections;
@@ -382,52 +382,7 @@ namespace ClassikNet
         }
 
 
-
-        public ClassicNet LoadInfo(string path)
-        {
-            try
-            {
-                string json = File.ReadAllText(path);
-                var options = GetJsonOptions();
-
-                ClassicNet classicNet = new ClassicNet();
-                classicNet.layerInfo = JsonSerializer.Deserialize<int[]>(json.Split("SPLITTER")[0], options);
-                classicNet.layerNeurons_biases = JsonSerializer.Deserialize<float[][]>(json.Split("SPLITTER")[1], options);
-                classicNet.layerNeuron_connections = JsonSerializer.Deserialize<float[][,]>(json.Split("SPLITTER")[2], options);
-
-
-                Console.WriteLine($"{this.GetType().FullName} loaded! Watch out for lurking bugs.");
-                return classicNet;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Oops! Error loading {this.GetType().FullName}: {ex.Message}");
-                // Pro tip: Never let the player see this message. They'll think we're amateurs!
-            }
-            return null;
-        }
-
-        // Save current state to JSON
-        public void Save(string path)
-        {
-            try
-            {
-                var options = GetJsonOptions();
-                string json_info = JsonSerializer.Serialize<int[]>(this.layerInfo, options);
-                string json_biases = JsonSerializer.Serialize<float[][]>(this.layerNeurons_biases, options);
-                string json_connections = JsonSerializer.Serialize<float[][,]>(this.layerNeuron_connections, options);
-                File.WriteAllText(path,
-                    json_info + "SPLITTER" +
-                    json_biases + "SPLITTER" +
-                    json_connections);
-                Console.WriteLine($"{this.GetType().FullName} saved! Your future self will thank you.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Save failed! Reason: {ex.Message} (Did you anger the JSON gods?)");
-            }
-        }
-
+         
 
         // Because we like pretty JSON and enums that make sense
         private JsonSerializerOptions GetJsonOptions()
@@ -448,5 +403,6 @@ namespace ClassikNet
         {
             return str.Split('_').Select(x => int.Parse(x)).ToArray();
         }
+        
     }
 }
