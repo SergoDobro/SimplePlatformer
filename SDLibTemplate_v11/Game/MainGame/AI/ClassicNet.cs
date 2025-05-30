@@ -177,15 +177,6 @@ namespace ClassikNet
             return RunNet(layerInputPosition.OrderBy(x => x.Value).Select(x => Activate(keyValuePairs[x.Key])).ToArray());
         }
 
-        public float[] RunNet(float[] firstLayer)
-        {
-            float[] layerFrom = firstLayer;
-            for (int i = 0; i < layerInfo.Length - 1; i++)
-            {
-                layerFrom = CalculateLayer(i, layerFrom);
-            }
-            return layerFrom;
-        }
 
         public float[][] RunNet_SnapshotNeurons(Dictionary<string, float> keyValuePairs)
         {
@@ -205,30 +196,53 @@ namespace ClassikNet
             return layer_snapshots;
         }
 
-        public float[] CalculateLayer(int layer, float[] layerFrom)
+        public float[] RunNet(float[] firstLayer)
         {
-            float[] nextLayer = new float[layerInfo[layer + 1]];
-            for (int i = 0; i < layerInfo[layer]; i++)
+            float[] layerFrom = firstLayer;
+            for (int i = 0; i < layerInfo.Length - 1; i++)
             {
-                for (int j = 0; j < layerInfo[layer + 1]; j++)
+                layerFrom = CalculateLayer(i, layerFrom);
+            }
+            return layerFrom;
+        }
+        /// <summary>
+        /// Calculates the output of the next layer in a neural network using weighted connections and biases.
+        /// </summary>
+        /// <param name="layer">Index of the current layer.</param>
+        /// <param name="inputs">Activations from the current layer.</param>
+        /// <returns>Activated outputs of the next layer.</returns>
+        public float[] CalculateLayer(int layer, float[] inputs)
+        {
+            int currentLayerSize = layerInfo[layer];
+            int nextLayerSize = layerInfo[layer + 1];
+
+            float[] outputs = new float[nextLayerSize];
+
+            // Weighted sum of inputs
+            for (int i = 0; i < currentLayerSize; i++)
+            {
+                for (int j = 0; j < nextLayerSize; j++)
                 {
-                    nextLayer[j] += layerFrom[i] * layerNeuron_connections[layer][i, j];
+                    outputs[j] += inputs[i] * layerNeuron_connections[layer][i, j];
                 }
             }
 
-            for (int j = 0; j < layerInfo[layer + 1]; j++)
+            // Add biases and apply activation
+            for (int j = 0; j < nextLayerSize; j++)
             {
-                nextLayer[j] += layerNeurons_biases[layer + 1][j];
-                nextLayer[j] = Activate(nextLayer[j]);
+                outputs[j] += layerNeurons_biases[layer + 1][j];
+                outputs[j] = Activate(outputs[j]);
             }
-            //now we got a layer
-            return nextLayer;
+
+            return outputs;
+             
         }
+
 
         public virtual ClassicNet GetCloningInstance()
         {
             return new ClassicNet();
-            
+
         }
         public ClassicNet Clone()
         {
@@ -382,7 +396,7 @@ namespace ClassikNet
         }
 
 
-         
+
 
         // Because we like pretty JSON and enums that make sense
         private JsonSerializerOptions GetJsonOptions()
@@ -403,6 +417,6 @@ namespace ClassikNet
         {
             return str.Split('_').Select(x => int.Parse(x)).ToArray();
         }
-        
+
     }
 }

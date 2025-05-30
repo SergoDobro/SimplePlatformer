@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SDLib_Experiments.Game.MainGame;
+using SDLibTemplate_v11.Game.MainGame;
 using SDLibTemplate_v11.Game.Menu;
 using SDMonoLibUtilits;
 using SDMonoLibUtilits.Scenes;
@@ -26,7 +27,7 @@ using Simple_Platformer.Game.MainGame.Other;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
-    public class GameScreen : ComplexScene, IContainsLevelData
+    public class CompetitionGameScreen : ComplexScene, IContainsLevelData
     {
         /// <summary>
         /// replace this object to your gamecore file with all session data
@@ -46,11 +47,12 @@ namespace SDLibTemplate_v11.Game.MainGame
         Effect effect;
 
         ChartFrame chartFrame;
+        CompeteGameScreen_GUI Ui;
         public override void Init()
         {
             RootScene.Instance.IsMouseVisible = false;
 
-
+            Ui = AddScene(new CompeteGameScreen_GUI());
             SetBindings();
 
             camera = new Camera() { Zoom = 5 };
@@ -62,8 +64,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             levelData = new LevelDaata_Level2();
             levelData.LoadPremade();
-
-            scenes.Add(new GameScreen_GUI());
+             
 
             chartFrame = new SDMonoLibUtilits.Scenes.Frames.ChartFrame()
             {
@@ -93,10 +94,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             base.Init();
 
             RootScene.Instance.Exiting += (arg1, arg2) => { cts.Cancel(); };
-            (scenes[0] as GameScreen_GUI).SubscribeOnExit(cts.Cancel);
-
-            (scenes[0] as GameScreen_GUI).buttons["LoadNets"].LeftButtonPressed += LoadBestNets;
-            (scenes[0] as GameScreen_GUI).buttons["SaveNets"].LeftButtonPressed += SaveBestNets;
+            Ui.SubscribeOnExit(cts.Cancel);
 
         }
 
@@ -116,12 +114,13 @@ namespace SDLibTemplate_v11.Game.MainGame
         {
             selector = new Selector_platformer();
             string path = "data.txt";
-            int num = (int)ChamberParameterLoader.LoadParametrs("number");
+            int num = 100;
             int[] parameters = new int[] { 11, 10, 5, 5, 4 };
             if (!File.Exists(path))
             {
                 File.Create(path).Close();
                 File.WriteAllLines(path, new string[] {
+                "300",
                 "11, 20, 10, 5, 4"
                 });
             }
@@ -132,165 +131,20 @@ namespace SDLibTemplate_v11.Game.MainGame
                     var dat = File.ReadAllLines(path);
                     num = int.Parse(dat[0]);
                     parameters = dat[1].Split(", ").Select(x => int.Parse(x)).ToArray();
-                    
-                }
-                catch
-                {
-                    try
-                    {
-                        File.WriteAllLines(path, new string[] {
-                "11, 40, 4"
-                });
-                    }
-                    catch { }
-
-                }
-            }
-
-            try
-            {
-                var _parameters = new int[(int)ChamberParameterLoader.LoadParametrs("parametrsCount")];
-                for (int i = 0; i < _parameters.Length; i++)
-                {
-                    _parameters[i] = (int)ChamberParameterLoader.LoadParametrs($"layer_{i}_size");
-                }
-                if (_parameters.Last()>=3)
-                {
-                    parameters = _parameters;
-
-                }
-            }
-            catch 
-            {
-            }
-
-            selector.Init(levelData, num, parameters);
-
-            
-            //gamecore = selector.chamberList.OrderBy(x => x.score).First().gamecore;//new Game(); 
-            classicNet = selector.chamberList.OrderBy(x => x.score).First().classicNet;
-
-            //classicNet.Init(3, new int[] { 6, 3, 3 });
-            selector.cts = cts.Token;
-            var mainTask = new Task(() =>
-            {
-                //return;
-                float extraTime = 0;
-                float maxExtra = 0;
-                int generation = 0;
-                for (int i = 0; i < 1000; i++)
-                {
-                    generation = i;
-                    //safer = true;
-                    //Thread.Sleep((20 + (int)(Math.Log((i + 2) / 2f, 1.5) * 2000 + maxExtra * 1500)) / 10);
-                    safer = false;
-                    Thread.Sleep(100);
-                    extraTime = (selector.chamberList.OrderBy(x => -x.player.Position.Y).First().player.Position.Y) / 100;
-                    if (extraTime < 0)
-                        extraTime = 0;
-                    if (extraTime > maxExtra)
-                        maxExtra = extraTime;
-                    chartFrame.chartData.dataPoints.Add(i, selector.chamberList.Select(x =>
-                    {
-                        double _data = (double)x.Evaluate();
-                        if (_data < -200)
-                            _data = -200;
-                        return _data;
-                    }).ToArray());
-                    chartFrame.RefreshData();
-                    selector.Select();
-
-                    
-
-                    try
-                    {
-                        if ((scenes[0] as GameScreen_GUI).checkboxes["Autosave"].GetChecked && generation%3 == 0)
-                        {
-                            SaveBestNets();
-                        }
-                        var net = ClassicNet.LoadFromFile($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}\\net_{0}.cn", selector.chamberList[0].classicNet.GetCloningInstance());
-                        if (net is not null)
-                        {
-                            selector.chamberList.Last().classicNet = net;
-
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-
-
-                    selectionStartedTime = totalTime;
-
-                    float maxT = 0;
-                    float addTicks = 0;
-                    float timeIncreaser = ChamberParameterLoader.LoadParametrs("timeIncreaser");
-                    float stableGenerationTime = ChamberParameterLoader.LoadParametrs("stableGenerationTime");
-                    for (int j = 0; j < 350 +addTicks+ timeIncreaser * (i - i % stableGenerationTime) /*+ maxExtra * 64*/; j++)
-                    {
-
-                        float dt = 1 / 120f;
-                        physics.Update(dt);
-                        levelData.Player.Update(dt);
-
-                        //levelData.Player.ButtonUpPressed();
-
-
-                        selector.Tick();
-
-                        foreach (var item in levelData.GameObjects["AIs"])
-                        {
-                            (item.Value as Player).Update(dt);
-                        }
-                        if (selector.BestChamber().maxH > maxT)
-                        {
-                            addTicks += 12;
-                            maxT = selector.BestChamber().maxH;
-                        }
-                    }
-
-                    Thread.Sleep(100);
-                }
-            }, cts.Token);
-            mainTask.Start();
-        }
-
-        public void LoadBestNets()
-        {
-
-            for (int i = 0; i < 1 + selector.chamberList.Count * 0.5f; i++)
-            {
-                try
-                {
-                    string path = $"TrainedModels\\ClassicNet_{selector.chamberList[i].classicNet.GetStructureString()}\\net_{i}.cn";
-                    if (!File.Exists(path))
-                        continue;
-
-                    selector.chamberList[i].classicNet = ClassicNet.LoadFromFile(
-                        path, selector.chamberList[0].classicNet.GetCloningInstance()
-                        );
                 }
                 catch
                 {
 
                 }
             }
-        }
-        public void SaveBestNets()
-        {
 
-            if (!Directory.Exists("TrainedModels"))
-                Directory.CreateDirectory("TrainedModels");
-            if (!Directory.Exists($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}"))
-                Directory.CreateDirectory($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}");
-            for (int i = 0; i < selector.chamberList.Count * 0.5f; i++)
-            {
-                var bestClassicNet = selector.chamberList[i].classicNet;
-                bestClassicNet.Save($"TrainedModels\\ClassicNet_{classicNet.GetStructureString()}\\net_{i}.cn");
-            }
+            selector.Init(levelData, 1, parameters);
 
+            selector.chamberList[0].classicNet = ClassicNet.LoadFromFile($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}\\net_{0}.cn", selector.chamberList[0].classicNet.GetCloningInstance());
+
+            safer = true;
         }
+
         /// <summary>
         /// can freely use ais
         /// </summary>
@@ -303,7 +157,6 @@ namespace SDLibTemplate_v11.Game.MainGame
         {
 
             base.LoadContent(contentManager, graphicsDevice);
-            scenes[0].Init();
 
 
             textures = new Dictionary<string, Texture2D>
@@ -312,11 +165,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             };
             textures["none"].SetData(new Color[] { Color.White });
             textures.Add("simple_sheet", contentManager.Load<Texture2D>("Textures\\simple_sheet"));
-            textures.Add("flag", contentManager.Load<Texture2D>("Textures\\Flag1X1png"));
-            textures.Add("square", contentManager.Load<Texture2D>("Textures\\Square1X1"));
-            
             RootScene.Instance.mainBackground = Color.DarkBlue;
-
             effect = contentManager.Load<Effect>("Shaders\\CoolPlatform");
 
         }
@@ -421,18 +270,31 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             RootScene.controls.keyBindingsData["game_controls"].SetContinuous(Keys.T, () =>
             {
-                SaveBestNets();
+                if (!Directory.Exists("TrainedModels"))
+                    Directory.CreateDirectory("TrainedModels");
+                if (!Directory.Exists($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}"))
+                    Directory.CreateDirectory($"TrainedModels\\ClassicNet_{selector.chamberList[0].classicNet.GetStructureString()}");
+                for (int i = 0; i < selector.chamberList.Count*0.5f; i++)
+                {
+                    var bestClassicNet = selector.chamberList[i].classicNet;
+                    bestClassicNet.Save($"TrainedModels\\ClassicNet_{classicNet.GetStructureString()}\\net_{i}.cn");
+                }
+
             });
 
             RootScene.controls.keyBindingsData["game_controls"].SetClick(Keys.Y, () =>
             {
-                LoadBestNets();
+
+                for (int i = 0; i < selector.chamberList.Count * 0.5f; i++)
+                {
+                    selector.chamberList[i].classicNet = ClassicNet.LoadFromFile($"TrainedModels\\ClassicNet_{selector.chamberList[i].classicNet.GetStructureString()}\\net_{i}.cn", selector.chamberList[0].classicNet.GetCloningInstance());
+                }
 
             });
 
             RootScene.controls.keyBindingsData["game_controls"].SetClick(Keys.Enter, () =>
             {
-
+                
                 levelData.Player.LaunchShot();
             });
 
@@ -456,7 +318,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             }
             _spriteBatch.End();
 
-
+            
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
             foreach (var rb in GraphicsComponentExtended.GraphicsExtendedComponents)
@@ -471,8 +333,8 @@ namespace SDLibTemplate_v11.Game.MainGame
                       );
             }
             _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred);
+            _spriteBatch.Begin(SpriteSortMode.Deferred,
+                effect: effect);
             foreach (var rb in TileGraphicsComponent.tileGraphicsComponents)
             {
                 rb.Draw(_spriteBatch, textures,
@@ -486,19 +348,6 @@ namespace SDLibTemplate_v11.Game.MainGame
             }
             _spriteBatch.End();
 
-
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred);
-            foreach (var rb in Texture2DComponent.AllInstances)
-            {
-                rb.Draw(_spriteBatch, textures,
-                      cameraOffset: camera.Position,
-                      scaleFactor: camera.Zoom
-                      );
-            }
-            _spriteBatch.End();
-
-
             base.Draw(_spriteBatch);
         }
 
@@ -507,28 +356,17 @@ namespace SDLibTemplate_v11.Game.MainGame
         bool updateGame = true;
         public void PauseClick()
         {
-            (scenes[0] as GameScreen_GUI).StartAnimationOpenPause();
+            Ui.StartAnimationOpenPause();
 
         }
         public void ReturnToGame()
         {
-            (scenes[0] as GameScreen_GUI).StartAnimationClosePause();
+            Ui.StartAnimationClosePause();
         }
 
         #endregion
 
 
     }
-
-    // Camera class (simplified)
-    public class Camera
-    {
-        public Vector2 Position { get; set; }
-        public float Zoom { get; set; } = 1.0f;
-        public void Follow(Vector2 position)
-        {
-            float p = 0.9f;
-            Position = (position - RootScene.GetGraphicsSize_v / (Zoom * (4))) * p + (1 - p) * Position;
-        }
-    }
+     
 }

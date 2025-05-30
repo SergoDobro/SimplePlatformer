@@ -67,5 +67,8 @@ namespace Simple_Platformer.Game.MainGame.Components
         {
             tileGraphicsComponents.Clear();
         }
+
+
     }
+
 }

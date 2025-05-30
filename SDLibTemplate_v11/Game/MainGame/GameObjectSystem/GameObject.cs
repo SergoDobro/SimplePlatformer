@@ -36,8 +36,15 @@ namespace Simple_Platformer.Game.MainGame.GameObjectSystem
             }
             if (gameComponent is IRegistable)
             {
+
                 (gameComponent as IRegistable).Register();
             }
+            //if (gameComponent is IGlobalRegisterable<gameComponent.GetType()>)
+            //{
+
+            //    (gameComponent as IGlobalRegisterable).Register();
+            //}
+            
             gameComponent.gameObject = this;
             return this;
         }

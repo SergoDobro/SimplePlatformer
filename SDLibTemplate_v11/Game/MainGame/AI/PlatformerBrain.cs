@@ -16,9 +16,9 @@ namespace Simple_Platformer.Game.MainGame.AI
                     "out_left",
                     "out_up",
                     "out_right",
-                    "memCell",
-                    "memCell1",
-                    "memCell2",
+                    //"learnRate",
+                    //"memCell1",
+                    //"memCell2",
             };
         }
         public override string[] DefineInput_Fast()
@@ -36,9 +36,9 @@ namespace Simple_Platformer.Game.MainGame.AI
                     "velX",
                     "velY",
                     "CanJump",
-                    "memCell",
-                    "memCell1",
-                    "memCell2",
+                    //"memCell",
+                    //"memCell1",
+                    //"memCell2",
                 };
         }
 

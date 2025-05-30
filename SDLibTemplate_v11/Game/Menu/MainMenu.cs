@@ -19,6 +19,7 @@ using Simple_Platformer.Game.MainGame.Other;
 
 namespace SDLibTemplate_v11.Game.Menu
 {
+     
     public class MainMenu : ComplexScene
     {
 
@@ -40,7 +41,7 @@ namespace SDLibTemplate_v11.Game.Menu
                 TransitionDuration = 3
             };
             slideshow.NextImage();
-            scenes.Add(slideshow);
+            AddScene(slideshow);
 
             RootScene.controls.AddBinding(new SDMonoLibUtilits.KeyBindingsData(), "menu");
 
@@ -51,13 +52,17 @@ namespace SDLibTemplate_v11.Game.Menu
             });
 
 
-            scenes.Add(new GUI_Menu());
+
+             
+
+            AddScene(new GUI_Menu());
             base.Init();
         }
         public override void LoadContent(ContentManager contentManager, GraphicsDevice graphicsDevice)
         {
-            base.LoadContent(contentManager, graphicsDevice);
-            scenes[0].Init();
+            base.LoadContent(contentManager, graphicsDevice); 
+            RootScene.Instance.LoadPostProcessing("Shaders\\PostProcessingEffect");
+            RootScene.Instance.SetPostProcessing(new PostProcessing_Vignet());
         }
 
         float del = 4f;
@@ -73,6 +78,7 @@ namespace SDLibTemplate_v11.Game.Menu
         }
         public override void Draw(SpriteBatch _spriteBatch)
         {
+            
             base.Draw(_spriteBatch);//ui is drawn here, TODO: Add UI here
         }
     }
@@ -83,6 +89,7 @@ namespace SDLibTemplate_v11.Game.Menu
     {
         float curDisplayedScore = 0;
         float targetDisplayedScore = 0;
+        
         protected override void CreateUI()
         {
             DUIE_Outline.standartOutline = 2;
@@ -92,7 +99,7 @@ namespace SDLibTemplate_v11.Game.Menu
             Elements.Add(new ButtonEffected(Manager)
             {
                 rectangle = new Microsoft.Xna.Framework.Rectangle(200, 100, 300, 60),
-                text = "Singleplayer",
+                text = "Competition",
                 textAligment = SDMonoUI.UI.Enums.TextAligment.Center,
                 scale = 0.4f,
                 mainColor = Color.Orange
@@ -100,8 +107,9 @@ namespace SDLibTemplate_v11.Game.Menu
             Elements.Add(new ButtonEffected(Manager)
             {
                 rectangle = new Microsoft.Xna.Framework.Rectangle(200, 210, 300, 60),
-                text = "Multiplayer",
+                text = "Training",
                 textAligment = SDMonoUI.UI.Enums.TextAligment.Center,
+                fontColor = Color.WhiteSmoke,
                 scale = 0.4f,
                 mainColor = Color.OrangeRed
             });
@@ -140,8 +148,8 @@ namespace SDLibTemplate_v11.Game.Menu
                 {
                     int index = i;
                     Rectangle initialRectangle1 = Elements[index].rectangle;
-                    (Elements[index] as Button).HoverEnter += () => { DataChangers.IncreaseElement(0.2f, Elements[index], 5); };
-                    (Elements[index] as Button).HoverExit += () => { DataChangers.DecreaseElement(0.2f, Elements[index], 5); };
+                    //(Elements[index] as Button).HoverEnter += () => { DataChangers.IncreaseElement(0.2f, Elements[index], 5); };
+                    //(Elements[index] as Button).HoverExit += () => { DataChangers.DecreaseElement(0.2f, Elements[index], 5); };
                 }
 
             }).AddAction_DeleteAfterTime(2f);
@@ -163,7 +171,7 @@ namespace SDLibTemplate_v11.Game.Menu
 
             (Elements[0] as Button).LeftButtonPressed += () =>
             {
-                RootScene.LoadScene(new GameScreen());
+                RootScene.LoadScene(new CompetitionGameScreen());
             };
             (Elements[1] as Button).LeftButtonPressed += () =>
             {
@@ -181,7 +189,7 @@ namespace SDLibTemplate_v11.Game.Menu
             {
                 float ease = (float)(Math.Pow(totalTime / 15f, 6));
                 float ease2 = (float)(Math.Pow(totalTime / 15f, 2));
-                for (int i = 0; i < Elements.Count; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     ((Elements[i] as ButtonEffected).DUIEffectEarlyDraw as DUIE_Outline).outlineSize
                     = (int)Easings.Interpolate(ease2, 5, 2);
@@ -194,10 +202,53 @@ namespace SDLibTemplate_v11.Game.Menu
                 }
             }).AddAction_DeleteAfterTime(15f);
 
-
+            AddTopSplashButtons();
 
         }
 
+        private void AddTopSplashButtons()
+        {
+            var splashColors = new[] { Color.LightSkyBlue, Color.LightGreen, Color.Pink };
+            var splashTexts = new[] { "Splash A", "Splash B", "Splash C" };
+
+            for (int i = 0; i < splashTexts.Length; i++)
+            {
+                var splashButton = new Button(Manager)
+                {
+                    rectangleF = new RectangleF(50 + i * 160, -100, 140, 40),
+                    text = splashTexts[i],
+                    textAligment = SDMonoUI.UI.Enums.TextAligment.Center,
+                    scale = 0.35f,
+                    mainColor = splashColors[i]
+                };
+                
+                Elements.Add(splashButton);
+
+                // Bounce animation from top
+                new DataChanger((dc, totalTime, dt) =>
+                {
+                    float ease = (float)Easings.EaseOutBack(totalTime / 1.2f);
+                    splashButton.rectangle.Y = (int)MathHelper.Lerp(-100, 20 + i * 50, ease);
+                }).AddAction_DeleteAfterTime(1.2f);
+
+                int k = i;
+                // Splash effect on click
+                splashButton.LeftButtonPressed += () =>
+                {
+                    var splash = new SDMonoLibUtilits.Scenes.Particles.ParticleEffects.ParticleEffect_OnSquareArea();
+                    RootScene.particle_system.CreateEffect(splash);
+
+                    splash.StartEffect(
+                        typeof(SDMonoLibUtilits.Scenes.Particles.ParticleTypes.Splash_RandomAppearOnScreen),
+                        new Rectangle(Point.Zero, RootScene.Instance.GetGraphicsScreenSize.ToPoint()),
+                        duration: 5,
+                        particlesCount: 100,
+                        mainColor: splashColors[k] * 0.5f
+                    );
+                    splash.DeleteOnEnd = true;
+                };
+            }
+        }
 
     }
 }

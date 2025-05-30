@@ -105,5 +105,27 @@ namespace SDLibTemplate_v11.Game.MainGame
         {
 
         }
+        public T SafeAddGameObject<T>(T gameObject, string name, string group)
+        {
+            if (gameObject is GameObject)
+            {
+                if (!GameObjects.ContainsKey(group))
+                    GameObjects.Add(group, new Dictionary<string, GameObject>());
+                if (!GameObjects[group].ContainsKey(name))
+                    GameObjects[group].Add(name, gameObject as GameObject);
+                else
+                {
+                    
+                    System.Diagnostics.Debug.WriteLine($"{name} already exists in {group}");
+                    int k = 0;
+                    while (GameObjects[group].ContainsKey(name+$" ({k})"))
+                        k++;
+                    GameObjects[group].Add(name + $" ({k})", gameObject as GameObject);
+
+
+                }
+            }
+            return gameObject;
+        }
     }
 }

@@ -18,32 +18,37 @@ namespace SDLib_Experiments.Game.MainGame
         public float learnFrequence = 0.0001f;
         public Player player { get; set; }
         public ClassicNet classicNet;
-        int successInRowCounter = 0;
-        int totalFails = 0;
-        float maxH = int.MinValue;
-        float ticksTillMax = 0;
-        Dictionary<string, float> data;
-        int oldPos = 0;
-        int oldPos_time = 0;
+        public float maxH = int.MinValue; 
+        Dictionary<string, float> data; 
         public void Init()
         {
             learnPower = ChamberParameterLoader.LoadParametrs("learnPower");
             learnFrequence = ChamberParameterLoader.LoadParametrs("learnFrequence");
-            totalFails = 0;
+            if (ChamberParameterLoader.LoadParametrs("dynamicLearnRate") != 1)
+                learnRate = 1;
+
             score = 0;
             if (data is null)
                 data = new Dictionary<string, float>();
             data.Clear();
             iter = 0;
 
+            tickNum = 0;
+
         }
+        int tickNum = 0;
         public void Tick()
         {
-
+            tickNum++;
             //gamecore.UpdateTick();
             var dat = GetGameData();
             if (dat.Count() == 0)
             {
+                return;
+            }
+            if (classicNet is null)
+            {
+                
                 return;
             }
             var result = classicNet.RunNet(GetGameData());
@@ -56,20 +61,26 @@ namespace SDLib_Experiments.Game.MainGame
             if (out_right > out_left && out_right > 0.1) player.ButtonRightPressed();
             if (out_up > 0.1) player.ButtonUpPressed();
 
-            score = -player.Position.Y / 100;
+            if (
+                ((RootScene.Instance.Root_scene as IContainsLevelData).levelData.spawnPoint.Y) + tickNum/10 < -player.Position.Y)
+            {
+                score = -player.Position.Y / 100;
+
+            }
             if (-player.Position.Y > maxH)
             {
                 maxH = -player.Position.Y;
             }
 
-            memCells[0] = result[3];
-            memCells[1] = result[4];
-            memCells[2] = result[5];
+            //learnRate = result[3];
+            //memCells[1] = result[4];
+            //memCells[2] = result[5];
         }
         public float prevX = 0;
         public float prevY = 0;
         public float iter = 0;
         public float[] memCells = new float[3];
+        public float learnRate = 10;
         public Dictionary<string, float> GetGameData()
         {
             //
@@ -80,23 +91,23 @@ namespace SDLib_Experiments.Game.MainGame
 
             data["positionX"] = player.Position.X - prevX;
             data["positionY"] = player.Position.Y - prevY;
-            Vector2 topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as IAIPlatformerJumper).GetClosestPlatformBelowMyY(player.Position);
-            data["distToTopX"] = (player.Position.X - topPanel.X) / 10f;
-            data["distToTopY"] = (player.Position.Y - topPanel.Y) / 10f;
+            Vector2 topPanel = ((RootScene.Instance.Root_scene as IContainsLevelData).levelData as IAIPlatformerJumper).GetClosestPlatformBelowMyY(player.Position);
+            data["distToTopX"] = (player.Position.X - topPanel.X) / 1f;
+            data["distToTopY"] = (player.Position.Y - topPanel.Y) / 1f;
 
-            topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as IAIPlatformerJumper).GetClosestPlatformBeyondMyY(player.Position);
-            data["distToBotX"] = (player.Position.X - topPanel.X) / 10f;
-            data["distToBotY"] = (player.Position.Y - topPanel.Y) / 10f;
+            topPanel = ((RootScene.Instance.Root_scene as IContainsLevelData).levelData as IAIPlatformerJumper).GetClosestPlatformBeyondMyY(player.Position);
+            data["distToBotX"] = (player.Position.X - topPanel.X) / 1f;
+            data["distToBotY"] = (player.Position.Y - topPanel.Y) / 1f;
 
 
-            topPanel = ((RootScene.Instance.Root_scene as GameScreen).levelData as IAIPlatformerJumper).GetClosestPlatformBeyondMyYX2(player.Position);
-            data["distToTopTopX"] = (player.Position.X - topPanel.X) / 10f;
-            data["distToTopTopY"] = (player.Position.Y - topPanel.Y) / 10f;
+            topPanel = ((RootScene.Instance.Root_scene as IContainsLevelData).levelData as IAIPlatformerJumper).GetClosestPlatformBeyondMyYX2(player.Position);
+            data["distToTopTopX"] = (player.Position.X - topPanel.X) / 1f;
+            data["distToTopTopY"] = (player.Position.Y - topPanel.Y) / 1f;
 
             data["CanJump"] = player.RigidBody.IsCollidingDown ? 1 : -1;
-            data["memCell"] = memCells[0];
-            data["memCell1"] = memCells[1];
-            data["memCell2"] = memCells[2];
+            //data["memCell"] = memCells[0];
+            //data["memCell1"] = memCells[1];
+            //data["memCell2"] = memCells[2];
             //data["time"] = iter; 
             prevX = player.Position.X;
             prevY = player.Position.Y;
@@ -112,7 +123,7 @@ namespace SDLib_Experiments.Game.MainGame
         public float Evaluate()
         {
             return score / 400 + maxH - ((
-                ((RootScene.Instance.Root_scene as GameScreen).levelData as IAIPlatformerJumper).GetClosestPlatformBelowMyY(player.Position) - player.Position).LengthSquared()
+                ((RootScene.Instance.Root_scene as IContainsLevelData).levelData as IAIPlatformerJumper).GetClosestPlatformBelowMyY(player.Position) - player.Position).LengthSquared()
 
                 //(((RootScene.Instance.Root_scene as GameScreen).levelData as LevelDaata_Level1).GetClosestPlatformBeyondMyY(player.Position) - player.Position).Length()
                 ) / 20
@@ -122,8 +133,9 @@ namespace SDLib_Experiments.Game.MainGame
         {
             Chamber chamber = new Chamber();
             chamber.classicNet = classicNet.Clone();
-            chamber.classicNet.MutateGenome_OneGenome(learnPower, learnFrequence);
+            chamber.classicNet.MutateGenome_OneGenome(learnPower * learnRate, learnFrequence * learnRate);
             chamber.Init();
+            chamber.learnRate = learnRate * (1 + 0.3f*(Random.Shared.NextSingle()*2-1));
             return chamber;
         }
         public static Chamber CrossingOverChamber(ClassicNet classicNet)

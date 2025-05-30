@@ -16,7 +16,7 @@ using SDMonoUI.UI.Elements;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
-    internal class GameScreen_GUI : AbstractGUI
+    internal class CompeteGameScreen_GUI : AbstractGUI
     {
         protected override void CreateUI()
         {
@@ -69,14 +69,19 @@ namespace SDLibTemplate_v11.Game.MainGame
 
 
 
-            (GameScreenElements[0] as Button).LeftButtonPressed += (RootScene.root_scene as GameScreen).PauseClick;
+            (GameScreenElements[0] as Button).LeftButtonPressed += (RootScene.root_scene as CompetitionGameScreen).PauseClick;
 
 
 
 
-
-            InitiateReloadButtonsx();
-
+            //Elements.Add(new Slider(Manager)
+            //{
+            //    rectangle = RB.GetRect(0 - 100, 700, 0, 50, 3, 3, 3, 3),
+            //    text = "Pause",
+            //    textAligment = SDMonoUI.UI.Enums.TextAligment.Center,
+            //    scale = 0.3f,
+            //    mainColor = Color.MonoGameOrange
+            //});
         }
 
 
@@ -133,7 +138,7 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             (pauseElements[0] as Button).LeftButtonPressed += () =>
             {
-                (RootScene.root_scene as GameScreen).ReturnToGame();
+                (RootScene.root_scene as CompetitionGameScreen).ReturnToGame();
             };
             (pauseElements[2] as Button).LeftButtonPressed += () =>
             {
@@ -230,39 +235,5 @@ namespace SDLibTemplate_v11.Game.MainGame
             base.Update(dt);
         }
 
-        public void InitiateReloadButtonsx()
-        { 
-            Rectangle rect = RB_rel.GetRect(0f, 0.3f, 0f, 0.4f,
-                0.05f, 0.05f, 0.05f, 0.05f,
-                RootScene.GetScreenResolution_rect);
-            int startX = rect.X;
-            int startY = rect.Y;
-            int panelWidth = rect.Width;
-            int elementHeight = 40;
-            int margin = 5;
-
-            // Element configurations - add new entries here
-            var buttonsConfig = new Dictionary<string, (string Text, Color Color)>
-            {
-                ["LoadNets"] = ("Load", Color.Blue),
-                ["SaveNets"] = ("Save", Color.Green)
-            };
-
-
-            var checkboxesConfig = new Dictionary<string, string>
-            {
-                ["Autosave"] = "Autosave",
-            };
-
-             
-
-            CreateBox(startX, startY, panelWidth, elementHeight, margin, buttonsConfig, null, checkboxesConfig);
-
-
-            //button_expand = buttons["expand"];
-            //button_reload = buttons["reload"];
-            //checkbox_overlay = checkboxes["overlay"];
-            //checkbox_overlay_owners = checkboxes["overlay_owners"];
-        }
     }
 }

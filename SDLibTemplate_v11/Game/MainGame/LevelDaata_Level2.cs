@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using System.Linq;
 using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using Simple_Platformer.Game.MainGame.Components;
+using SDMonoUI.UI.Elements;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -35,6 +36,8 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             
             GameObjects.TryAdd("platforms", new Dictionary<string, GameObject>());
+            GameObjects.TryAdd("Squares", new Dictionary<string, GameObject>());
+            GameObjects.TryAdd("flags", new Dictionary<string, GameObject>());
             float lastX = -100;
             for (int i = 0; i < 20; i++)
             {
@@ -65,12 +68,13 @@ namespace SDLibTemplate_v11.Game.MainGame
 
             float lastX = 0;
             float lastY = 0;
+            Random random = new Random(42);
             GameObjects.TryAdd("tiles", new Dictionary<string, GameObject>());
             for (int j = 0; j < 50; j++)
             {
 
                 AddPlatform6(lastX + 50, 80 + lastY);
-                lastX += (float)(Random.Shared.Next(-50, 51)*(1.2+Math.Sin(lastY/100)));
+                lastX += (float)(random.Next(-50, 51)*(1.2+Math.Sin(lastY/100)));
                 lastY -= 19;
             }
         }
@@ -98,7 +102,6 @@ namespace SDLibTemplate_v11.Game.MainGame
                 GameObjects["tiles"].TryAdd($"tile_{x}_{y}_{i}", platform);
 
 
-
                 var platform2 = new GameObject()
                 {
                     Position = new Vector2(x + i * 5, y + 5),
@@ -114,6 +117,37 @@ namespace SDLibTemplate_v11.Game.MainGame
                 platform2.AddComponent(new TileGraphicsComponent() { tilesheetPosId = (i == 0 ? (6) : (i == 2 ? 8 : 7)) });
 
                 GameObjects["tiles"].TryAdd($"tile_{x}_{y}_{i}_bot", platform2);
+            
+            
+
+            }
+
+            if (leftPlatformPositions.Count() % 5 != 0)
+                return;
+            y -= 7.5f;
+            x += 3;
+            Flag flag = new Flag() { Position = new Vector2(x,y)};
+            GameObjects["flags"].TryAdd($"flag_{x}_{y}_", flag);
+
+            x += 100;
+            for (int i = 0; i < 1; i++)
+            {
+                var Square = new GameObject();
+                SafeAddGameObject(Square, $"flag_{x}_{y}_", "measurements")
+                    .AddComponent(new Texture2DComponent()
+                {
+                    textureName = "square",
+                    rectangle = new RectangleF(10, 10)
+                }).AddComponent(new Rigidbody
+                {
+                    Group = CollisionGroup.Group2,
+                    IsKinematic = true,
+                    Colliders = {
+                            new Collider { Offset = Vector2.Zero, Size = new Vector2(10, 10) }
+                    }
+                }); ; 
+                Square.Position = new Vector2(x + 20*i,y);
+
             }
         }
         public Vector2 GetClosestPlatformBelowMyY(Vector2 position)

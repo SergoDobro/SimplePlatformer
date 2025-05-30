@@ -9,7 +9,7 @@ namespace Simple_Platformer.Game.MainGame.Components
 {
     public class GraphicsComponent : GameComponent
     {
-        public void Draw(SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures,
+        public virtual void Draw(SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures,
                     Vector2 cameraOffset, float scaleFactor = 1.0f, Color? color = null)
         {
             if (!textures.TryGetValue("none", out Texture2D texture) || texture == null)

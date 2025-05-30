@@ -86,7 +86,14 @@ namespace SDLib_Experiments.Game.MainGame
 
                 for (int i = 0; i < newBorns / 2 && newBorns > 0 && i + 1 < og; i += 2)
                 {
+                    if (resList[0 + i].classicNet is null)
+                        resList[0 + i].classicNet = resList[0].classicNet;
+
+                    if (resList[1 + i].classicNet is null)
+                        resList[1 + i].classicNet = resList[0].classicNet;
+
                     resList.Add(Chamber.CrossingOverChamber(ClassicNet.Crossingover(resList[0 + i].classicNet, resList[1 + i].classicNet)));
+                    resList.Last().learnRate = (resList[0 + i].learnRate + resList[1 + i].learnRate)/2;
                     resList.Last().player = freePlayers.Dequeue();
                     newBorns--;
 

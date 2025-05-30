@@ -32,6 +32,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Update="ChamberParametrs.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\Audio\NonMGCBBuild\Summer-Sport%28chosic.com%29.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
