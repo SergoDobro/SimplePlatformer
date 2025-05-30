@@ -1,12 +1,15 @@
 {
+  "seed": 429,
   "learnPower": 100,
   "learnFrequence": 1E-04,
-  "timeIncreaser": 20,
+  "addTimePerUnit": 12,
+  "baseTime": 500,
+  "timeIncreaser": 5,
   "stableGenerationTime": 3,
   "number": 100,
   "parametrsCount": 3,
   "layer_0_size": 11,
   "layer_1_size": 100,
   "layer_2_size": 3,
-  "dynamicLearnRate": 1
+  "dynamicLearnRate": 0
 }

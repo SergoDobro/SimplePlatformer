@@ -224,10 +224,12 @@ namespace SDLibTemplate_v11.Game.MainGame
                     selectionStartedTime = totalTime;
 
                     float maxT = 0;
-                    float addTicks = 0;
+                    float addTicks = 0; 
+                    float addTimePerUnit = ChamberParameterLoader.LoadParametrs("addTimePerUnit");
+                    float baseTime = ChamberParameterLoader.LoadParametrs("baseTime");
                     float timeIncreaser = ChamberParameterLoader.LoadParametrs("timeIncreaser");
                     float stableGenerationTime = ChamberParameterLoader.LoadParametrs("stableGenerationTime");
-                    for (int j = 0; j < 350 +addTicks+ timeIncreaser * (i - i % stableGenerationTime) /*+ maxExtra * 64*/; j++)
+                    for (int j = 0; j < baseTime + addTicks+ timeIncreaser * (i - i % stableGenerationTime) /*+ maxExtra * 64*/; j++)
                     {
 
                         float dt = 1 / 120f;
@@ -245,7 +247,7 @@ namespace SDLibTemplate_v11.Game.MainGame
                         }
                         if (selector.BestChamber().maxH > maxT)
                         {
-                            addTicks += 12;
+                            addTicks += addTimePerUnit;
                             maxT = selector.BestChamber().maxH;
                         }
                     }

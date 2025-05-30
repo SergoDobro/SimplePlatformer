@@ -6,6 +6,7 @@ using System.Linq;
 using Simple_Platformer.Game.MainGame.GameObjectSystem;
 using Simple_Platformer.Game.MainGame.Components;
 using SDMonoUI.UI.Elements;
+using SDLib_Experiments.Game.MainGame;
 
 namespace SDLibTemplate_v11.Game.MainGame
 {
@@ -66,15 +67,16 @@ namespace SDLibTemplate_v11.Game.MainGame
         {
 
 
-            float lastX = 0;
+            Random random = new Random((int)ChamberParameterLoader.LoadParametrs("seed"));
+            float lastX = random.Next(-5,5);
             float lastY = 0;
-            Random random = new Random(42);
+            float shifter = random.NextSingle()*3.14f*2;
             GameObjects.TryAdd("tiles", new Dictionary<string, GameObject>());
             for (int j = 0; j < 50; j++)
             {
 
                 AddPlatform6(lastX + 50, 80 + lastY);
-                lastX += (float)(random.Next(-50, 51)*(1.2+Math.Sin(lastY/100)));
+                lastX += (float)(random.Next(-50, 51)*(1.2+Math.Sin(shifter + lastY / 100)));
                 lastY -= 19;
             }
         }
@@ -128,7 +130,7 @@ namespace SDLibTemplate_v11.Game.MainGame
             x += 3;
             Flag flag = new Flag() { Position = new Vector2(x,y)};
             GameObjects["flags"].TryAdd($"flag_{x}_{y}_", flag);
-
+            return;
             x += 100;
             for (int i = 0; i < 1; i++)
             {
